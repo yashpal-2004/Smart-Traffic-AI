@@ -49,3 +49,10 @@ body{background:var(--bg);color:var(--text)}
 .intersection>path:first-of-type{fill:#E8DECB}
 .intersection>path:nth-of-type(3){fill:#F8F2E7}
 #reset-button.button.ghost .ui-icon{width:20px;height:20px;stroke-width:2.2}
+/* Keep phase direction badge distinct from the signal label */
+.decision-main{align-items:center;gap:12px}
+.phase-arrows{flex:0 0 38px;width:38px;height:38px;border:1px solid #C8D9E4;border-radius:10px;background:#EAF1F5;color:#315F85}
+.phase-arrows .ui-icon{width:24px;height:24px;stroke-width:2.2}
+.decision-main>div:last-child{display:grid;gap:3px;min-width:0}
+.decision-main strong{font-size:13px;letter-spacing:-.15px}
+.decision-main small{margin-top:0;font-size:10px}
