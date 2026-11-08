@@ -4,12 +4,12 @@ Status key: `NOT STARTED`, `IN PROGRESS`, `BLOCKED`, `DONE`.
 
 ## M0 — Documentation and decisions (DONE)
 - [x] Product brief, UI plan, architecture, milestones, and handoff guide created.
-- [ ] Confirm repository layout and implementation stack before coding.
+- [x] Confirm repository layout and implementation stack before coding.
 
-## M1 — Deterministic simulator core (NOT STARTED)
-- [ ] Implement queue/vehicle model, phases, transitions, arrivals, movement, metrics, seeded RNG.
-- [ ] Add fixed-time baseline.
-- [ ] Define and test step ordering and edge cases.
+## M1 — Deterministic simulator core (DONE)
+- [x] Implement queue/vehicle model, phases, transitions, arrivals, movement, metrics, seeded RNG.
+- [x] Add fixed-time baseline.
+- [x] Define and test step ordering and edge cases.
 **Acceptance:** same seed/config produces identical trace; no vehicle disappears except when served; no conflicting phases; metrics match hand-calculated tiny scenarios.
 
 ## M2 — Q-learning agent (NOT STARTED)

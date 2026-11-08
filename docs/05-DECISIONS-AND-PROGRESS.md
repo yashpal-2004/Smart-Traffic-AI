@@ -12,3 +12,12 @@
 - Files: project brief, UI plan, architecture, milestones, agent handoff, this log.
 - Verification: checked target workspace existed before creating project folder.
 - Next exact step: inspect the new folder and decide whether implementation should begin in this folder or another existing repository; then start M1.
+
+
+### 2026-11-08 — M1 deterministic simulator complete
+- Status: DONE.
+- Changed: added the seeded four-approach environment, three demand scenarios, configurable green/amber timing, queue and wait metrics, fixed-time policy, and five deterministic acceptance tests.
+- Decisions: arrivals are Bernoulli per approach per simulated second; active opposing approaches each serve at most one vehicle per second; amber ticks block service; vehicle wait is measured from arrival through service.
+- Verification: `PYTHONPATH=backend python3 -m unittest discover -s backend/tests -v` — 5 tests passed. `graphify update .` completed.
+- Known limitations: simplified one-lane intersection and per-second Bernoulli traffic; no UI/API yet.
+- Next exact step: implement tabular Q-learning with discrete queue/phase observations, legal hold/switch actions, training loop, and deterministic checkpointing (M2).
