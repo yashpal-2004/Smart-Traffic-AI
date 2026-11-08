@@ -72,3 +72,9 @@ body{background:var(--bg);color:var(--text)}
 .site-picker-help{display:block;max-width:420px;color:#82796A;font:10px/1.45 Manrope,sans-serif;letter-spacing:0}
 .history-controls>#forecast-button{align-self:flex-start;margin-top:22px;min-height:42px;padding:0 15px;border-radius:9px}
 @media(max-width:700px){.history-controls{display:grid;grid-template-columns:minmax(0,1fr);gap:11px}.history-controls>label{min-width:0;width:100%}.history-controls>#forecast-button{margin-top:0;justify-self:start}}
+/* Keep evaluation result panels on the same light surface as the rest of the app */
+.result-column,.comparison-bar,.paired-summary-card{background:#F5ECDD;border-color:#D8CEBB;color:#39352F}
+.result-column h3,.result-column strong,.paired-summary-card strong{color:#39352F}
+.result-value,.comparison-bar-label,.results-toolbar{border-color:#E5DCCB;color:#71695D}
+.bar-row{color:#82796A}.bar-row i{background:#66866C}.bar-row.q i{background:#B58A48}
+.result-value b{color:#39352F;font-weight:650}.export-button{background:#E8DECB;border-color:#D8CEBB;color:#39352F}.export-button:hover{background:#DFD4C0}

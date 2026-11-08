@@ -36,9 +36,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1794125002.0726273,
-    "seen": 1794125003.109766,
-    "ast_hash": "eb37c1c7a749e2885740d8f823e71fd9",
+    "mtime": 1794125219.8233302,
+    "seen": 1794125220.608629,
+    "ast_hash": "620497647363a4830f0fc2c33d914e0f",
     "semantic_hash": ""
   },
   "backend/README.md": {
@@ -185,12 +185,6 @@
     "ast_hash": "081534cf9ea6144bd5bd4e30204b5dfb",
     "semantic_hash": ""
   },
-  "docs/images/signal-lab-compare.png": {
-    "mtime": 1794124989.259941,
-    "seen": 1794125003.109785,
-    "ast_hash": "9be8f17e9521104b06ed2782a98d4829",
-    "semantic_hash": ""
-  },
   "backend/app/traffic_feed.py": {
     "mtime": 1794120793.2940018,
     "seen": 1794120932.9838321,
@@ -225,6 +219,12 @@
     "mtime": 1794122961.0558386,
     "seen": 1794123043.264425,
     "ast_hash": "112a447d3c3b842539922b3cfb9aecb6",
+    "semantic_hash": ""
+  },
+  "docs/images/signal-lab-compare-light.png": {
+    "mtime": 1794125219.780095,
+    "seen": 1794125220.6086469,
+    "ast_hash": "03e8e531ad5744db201a0e774e5d63ba",
     "semantic_hash": ""
   }
 }
