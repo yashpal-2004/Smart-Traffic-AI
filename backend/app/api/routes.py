@@ -7,6 +7,7 @@ from pathlib import Path
 from threading import Lock, Thread
 from random import Random
 from datetime import datetime, timezone
+from hashlib import sha256
 
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -175,9 +176,35 @@ def run_evaluation(request: EvaluationRequest):
     unknown = set(request.scenarios) - set(SCENARIOS)
     if unknown:
         raise HTTPException(422, f"unknown scenarios: {', '.join(sorted(unknown))}")
+    config = SignalConfig()
     report = evaluate([SCENARIOS[name] for name in request.scenarios], request.seeds,
-                      request.steps, SignalConfig(), trained_agent, duration_agent)
-    report["metadata"] = {"report_id": str(uuid4()), "generated_at": datetime.now(timezone.utc).isoformat()}
+                      request.steps, config, trained_agent, duration_agent)
+    def fingerprint(path: Path, available: bool) -> str | None:
+        if not available or not path.is_file():
+            return None
+        digest = sha256()
+        with path.open("rb") as checkpoint:
+            for chunk in iter(lambda: checkpoint.read(65536), b""):
+                digest.update(chunk)
+        return digest.hexdigest()
+    report["metadata"] = {
+        "report_id": str(uuid4()),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "endpoint": "POST /api/evaluations",
+        "signal_config": {"min_green_seconds": config.min_green,
+                           "max_green_seconds": config.max_green,
+                           "amber_seconds": config.amber_seconds},
+        "scenario_arrival_rates_per_step": {
+            name: {approach.value: rate for approach, rate in SCENARIOS[name].arrival_rates.items()}
+            for name in request.scenarios
+        },
+        "model_checkpoints": {
+            "hold_switch_q_table_sha256": fingerprint(MODEL_PATH, model_trained),
+            "hold_switch_states": len(trained_agent.q_values),
+            "duration_q_table_sha256": fingerprint(DURATION_MODEL_PATH, duration_agent is not None),
+            "duration_states": len(duration_agent.q_values) if duration_agent else 0,
+        },
+    }
     report["protocol"]["trained_policy"] = model_trained
     report["protocol"]["model_state_count"] = len(trained_agent.q_values)
     return report

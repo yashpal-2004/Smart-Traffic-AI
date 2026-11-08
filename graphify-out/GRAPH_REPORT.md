@@ -1,17 +1,17 @@
 # Graph Report - Smart-Traffic-AI  (2026-11-08)
 
 ## Corpus Check
-- 28 files · ~9,994 words
+- 28 files · ~10,253 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 2 file(s) not represented in the graph (top: (none) 1, .css 1)
 
 ## Summary
-- 242 nodes · 520 edges · 22 communities (13 shown, 9 thin omitted)
+- 245 nodes · 523 edges · 22 communities (13 shown, 9 thin omitted)
 - Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 45 edges (avg confidence: 0.87)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `9170b901`
+- Built from commit: `c76b7d2a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -36,8 +36,8 @@
 1. `TrafficEnvironment` - 42 edges
 2. `SignalConfig` - 28 edges
 3. `QLearningAgent` - 28 edges
-4. `train_episode()` - 19 edges
-5. `Progress` - 19 edges
+4. `Progress` - 20 edges
+5. `train_episode()` - 19 edges
 6. `evaluate()` - 17 edges
 7. `DurationQLearningAgent` - 15 edges
 8. `train_duration_episode()` - 15 edges
@@ -51,10 +51,10 @@
   backend/tests/test_simulator.py → backend/app/simulator/environment.py
 - `SimulatorTests` --uses--> `Phase`  [INFERRED]
   backend/tests/test_simulator.py → backend/app/simulator/environment.py
-- `FixedTimeController` --uses--> `SignalConfig`  [INFERRED]
-  backend/app/agents/fixed_time.py → backend/app/simulator/environment.py
-- `FixedTimeController` --uses--> `TrafficEnvironment`  [INFERRED]
-  backend/app/agents/fixed_time.py → backend/app/simulator/environment.py
+- `create_run()` --calls--> `FixedTimeController`  [EXTRACTED]
+  backend/app/api/routes.py → backend/app/agents/fixed_time.py
+- `create_run()` --calls--> `SignalConfig`  [EXTRACTED]
+  backend/app/api/routes.py → backend/app/simulator/environment.py
 
 ## Import Cycles
 - None detected.
@@ -62,7 +62,7 @@
 ## Communities (22 total, 9 thin omitted)
 
 ### Community 0 - "TrafficEnvironment"
-Cohesion: 0.18
+Cohesion: 0.16
 Nodes (8): FixedTimeController, run_episode(), Metrics, Scenario, SignalConfig, Snapshot, TrafficEnvironment, SimulatorTests
 
 ### Community 2 - "Product, Pages, and Premium UI Direction"
@@ -82,7 +82,7 @@ Cohesion: 0.22
 Nodes (8): API sketch, Component boundaries, Data and reproducibility, Engineering constraints, Proposed stack, Simulator contract, Suggested repo layout, Technical Architecture
 
 ### Community 6 - "routes.py"
-Cohesion: 0.12
+Cohesion: 0.11
 Nodes (16): control_run(), create_run(), CreateRunRequest, EvaluationRequest, get_run(), health(), model_status(), Run (+8 more)
 
 ### Community 7 - "AI Agent Handoff Instructions"
@@ -91,7 +91,7 @@ Nodes (4): AI Agent Handoff Instructions, Handoff note template, Rules, YYYY-MM-
 
 ### Community 8 - "Decisions and Progress Log"
 Cohesion: 0.09
-Nodes (21): 2026-11-08 — Background training progress, 2026-11-08 — Browser check of trained comparison, 2026-11-08 — Comparison reporting and CSV export, 2026-11-08 — Configurable paired-seed evaluation, 2026-11-08 — Configurable training and policy guide, 2026-11-08 — Duration policy in live simulation, 2026-11-08 — Full evaluation report CSV, 2026-11-08 — Green-duration semi-Markov agent (+13 more)
+Nodes (22): 2026-11-08 — Background training progress, 2026-11-08 — Browser check of trained comparison, 2026-11-08 — Comparison reporting and CSV export, 2026-11-08 — Configurable paired-seed evaluation, 2026-11-08 — Configurable training and policy guide, 2026-11-08 — Duration policy in live simulation, 2026-11-08 — Full evaluation report CSV, 2026-11-08 — Green-duration semi-Markov agent (+14 more)
 
 ### Community 9 - "Smart Traffic AI"
 Cohesion: 0.50
@@ -102,16 +102,16 @@ Cohesion: 0.40
 Nodes (4): Backend, Checks, Install and run API, Train and evaluate
 
 ### Community 14 - "QLearningAgent"
-Cohesion: 0.15
-Nodes (7): DurationQLearningAgent, train_duration_episode(), observe(), QLearningAgent, train_episode(), worker(), QLearningTests
+Cohesion: 0.18
+Nodes (6): DurationQLearningAgent, train_duration_episode(), observe(), train_episode(), worker(), QLearningTests
 
 ### Community 17 - "app.js"
 Cohesion: 0.27
 Nodes (17): createRun(), doStep(), downloadReport(), drawCars(), drawHistory(), exportEpisodes(), exportReportJson(), intervalLabel() (+9 more)
 
 ### Community 21 - "SignalConfig"
-Cohesion: 0.12
-Nodes (10): EpisodeResult, evaluate(), paired_delta_summary(), summarize(), write_report(), Approach, Phase, main() (+2 more)
+Cohesion: 0.11
+Nodes (11): QLearningAgent, EpisodeResult, evaluate(), paired_delta_summary(), summarize(), write_report(), Approach, Phase (+3 more)
 
 ## Knowledge Gaps
 - **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
@@ -120,16 +120,16 @@ Nodes (10): EpisodeResult, evaluate(), paired_delta_summary(), summarize(), writ
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `TrafficEnvironment` connect `TrafficEnvironment` to `SignalConfig`, `QLearningAgent`, `routes.py`?**
-  _High betweenness centrality (0.071) - this node is a cross-community bridge._
+  _High betweenness centrality (0.070) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `TrafficEnvironment` (e.g. with `FixedTimeController` and `SimulatorTests`) actually correct?**
   _`TrafficEnvironment` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **Should `routes.py` be split into smaller, more focused modules?**
-  _Cohesion score 0.1206896551724138 - nodes in this community are weakly interconnected._
-- **Why does `QLearningAgent` connect `QLearningAgent` to `TrafficEnvironment`, `SignalConfig`, `routes.py`?**
-  _High betweenness centrality (0.038) - this node is a cross-community bridge._
+  _Cohesion score 0.10967741935483871 - nodes in this community are weakly interconnected._
+- **Why does `QLearningAgent` connect `SignalConfig` to `TrafficEnvironment`, `QLearningAgent`, `routes.py`?**
+  _High betweenness centrality (0.037) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `SignalConfig` (e.g. with `FixedTimeController` and `SimulatorTests`) actually correct?**
   _`SignalConfig` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **Should `Decisions and Progress Log` be split into smaller, more focused modules?**
-  _Cohesion score 0.09090909090909091 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08695652173913043 - nodes in this community are weakly interconnected._
 - **Are the 6 inferred relationships involving `train_episode()` (e.g. with `.act()` and `.end_episode()`) actually correct?**
   _`train_episode()` has 6 INFERRED edges - model-reasoned connections that need verification._

@@ -153,3 +153,12 @@
 - Verification: a live single-seed report displayed its ID and generation timestamp, showed both download controls, and triggered each export action. The one-sample interval message remained correct.
 - Known limitation: browser download storage was not exposed for file-content inspection; report IDs are generated per API response and are not persisted by the server.
 - Next exact step: add route/config and model checkpoint identifiers to the exported report so results retain more context for reproduction.
+
+
+### 2026-11-08 — Reproducibility metadata and checkpoint fingerprints
+- Status: implemented and browser-verified.
+- Changed: evaluation metadata records the API endpoint, effective signal timings, selected scenarios' per-approach arrival probabilities, checkpoint state counts, and SHA-256 fingerprints for available Q-table files. Missing/untrained models are represented as unavailable.
+- Export behavior: complete JSON retains structured metadata; CSV emits each metadata field as a protocol row. The report footer shows signal settings and shortened checkpoint hashes.
+- Verification: live evaluation metadata contained both full Q-table hashes, 79/8 state counts, the three selected scenarios and their arrival-rate maps; footer showed matching hash prefixes and 5–30s green/2s amber settings.
+- Known limitation: fingerprints identify the saved table files, not the complete training data, runtime dependencies, or source revision.
+- Next exact step: add source revision capture from the repository when the app can identify the checked-out commit reliably.
