@@ -38,7 +38,12 @@ def main():
     args=p.parse_args()
     if args.episodes<1 or args.steps<1:p.error('episodes and steps must be positive')
     scenarios=list(SCENARIOS.values());agent=QLearningAgent();rng=random.Random(2026);config=SignalConfig()
-    for _ in range(args.episodes):
+    evaluation_episodes = len(scenarios) * len(args.seeds) * 2
+    print(f"SUMO run: {args.episodes} training episodes + {evaluation_episodes} evaluation episodes; "
+          "each episode starts a SUMO process. First startup may take several seconds.", flush=True)
+    for episode_number in range(1, args.episodes + 1):
+        if episode_number == 1 or episode_number % 10 == 0 or episode_number == args.episodes:
+            print(f"Training episode {episode_number}/{args.episodes}", flush=True)
         scenario=scenarios[rng.randrange(len(scenarios))]
         agent._rng.seed(rng.randrange(1_000_000))
         env=SumoEnvironment(scenario,rng.randrange(1_000_000),config,args.steps)
@@ -46,9 +51,14 @@ def main():
         finally:env.close()
     agent.save('backend/artifacts/sumo_q_table.json')
     rows=[]
+    evaluation_number = 0
     for scenario in scenarios:
         for seed in args.seeds:
+            evaluation_number += 1
+            print(f"Evaluation episode {evaluation_number}/{evaluation_episodes}: {scenario.name}, seed {seed}", flush=True)
             rows.append(episode('fixed_time',scenario,seed,args.steps,config))
+            evaluation_number += 1
+            print(f"Evaluation episode {evaluation_number}/{evaluation_episodes}: {scenario.name}, seed {seed}", flush=True)
             rows.append(episode('q_learning',scenario,seed,args.steps,config,agent))
     by={(r.scenario,r.seed,r.controller):r for r in rows};deltas=[]
     for scenario in scenarios:

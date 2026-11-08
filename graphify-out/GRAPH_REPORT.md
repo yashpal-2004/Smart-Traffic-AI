@@ -1,7 +1,7 @@
 # Graph Report - Smart-Traffic-AI  (2026-11-08)
 
 ## Corpus Check
-- 33 files · ~15,368 words
+- 33 files · ~15,498 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 7 file(s) not represented in the graph (top: .xml 3, (none) 1, .sumocfg 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `7eb24c0f`
+- Built from commit: `485e8acf`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -42,10 +42,10 @@
 ## Surprising Connections (you probably didn't know these)
 - `FixedTimeController` --uses--> `SignalConfig`  [INFERRED]
   backend/app/agents/fixed_time.py → backend/app/simulator/environment.py
-- `FixedTimeController` --uses--> `TrafficEnvironment`  [INFERRED]
-  backend/app/agents/fixed_time.py → backend/app/simulator/environment.py
 - `SimulatorTests` --uses--> `SignalConfig`  [INFERRED]
   backend/tests/test_simulator.py → backend/app/simulator/environment.py
+- `FixedTimeController` --uses--> `TrafficEnvironment`  [INFERRED]
+  backend/app/agents/fixed_time.py → backend/app/simulator/environment.py
 - `SimulatorTests` --uses--> `TrafficEnvironment`  [INFERRED]
   backend/tests/test_simulator.py → backend/app/simulator/environment.py
 - `episode()` --calls--> `FixedTimeController`  [EXTRACTED]

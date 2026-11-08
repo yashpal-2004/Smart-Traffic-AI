@@ -84,7 +84,9 @@ class SumoEnvironment:
                  "--route-files",str(route_file),"--seed",str(seed),"--end",str(steps),
                  "--no-step-log","true","--duration-log.disable","true"]
         try:
-            self.traci.start(command,label=self._connection_label)
+            # SUMO can take a few seconds to initialize on its first launch,
+            # especially when installed from the Python package on macOS.
+            self.traci.start(command,label=self._connection_label,numRetries=30)
             self.conn=self.traci.getConnection(self._connection_label)
             self.conn.trafficlight.setRedYellowGreenState("center","GrrG")
         except Exception:
@@ -151,5 +153,20 @@ class SumoEnvironment:
         return snap
 
     def close(self):
-        try:self.conn.close()
-        finally:self._temp.cleanup()
+        try:
+            conn = getattr(self, "conn", None)
+            if conn is not None:
+                process = getattr(conn, "_process", None)
+                conn.close(wait=False)
+                if process is not None:
+                    try:
+                        process.wait(timeout=3)
+                    except subprocess.TimeoutExpired:
+                        process.terminate()
+                        try:
+                            process.wait(timeout=3)
+                        except subprocess.TimeoutExpired:
+                            process.kill()
+                            process.wait()
+        finally:
+            self._temp.cleanup()
