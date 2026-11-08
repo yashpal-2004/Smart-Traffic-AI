@@ -1,4 +1,4 @@
-# Smart Traffic AI — Signal Lab
+# Smart Traffic AI - Signal Lab
 
 An educational traffic-signal-control lab. Run a four-way intersection, inspect what tabular Q-learning observes and chooses, and compare two learned policies with a fixed-time baseline under matched traffic seeds.
 

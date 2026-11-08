@@ -97,7 +97,7 @@ Cohesion: 0.19
 Nodes (7): FixedTimeController, run_episode(), Metrics, Scenario, Snapshot, TrafficEnvironment, SimulatorTests
 
 ## Knowledge Gaps
-- **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **7 thin communities (<3 nodes) omitted from report** - run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_

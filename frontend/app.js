@@ -383,7 +383,7 @@ async function runTrafficForecast(){
   $('forecast-model-mae').textContent=report.metrics.ridge_regression.mae.toFixed(2);
   $('forecast-next-value').textContent=report.next_cycle_forecast.ridge_regression.toFixed(1);
   $('forecast-next-time').textContent=`Model count / cycle · ${new Date(report.next_cycle_forecast.estimated_for).toLocaleTimeString()}`;
-  $('forecast-validation-window').textContent=`${new Date(report.validation_start).toLocaleString()} — ${new Date(report.validation_end).toLocaleString()}`;
+  $('forecast-validation-window').textContent=`${new Date(report.validation_start).toLocaleString()} - ${new Date(report.validation_end).toLocaleString()}`;
   $('forecast-method-note').textContent=`${report.validation_method}. Features: previous three cycle counts and hour-of-day sine/cosine. Regularization ${report.model.regularization}. Forecast horizon is one next observed source cycle (estimated median interval ${report.next_cycle_forecast.estimated_interval_seconds}s); it is not an hourly forecast.`;
   drawForecastChart(report.validation);
  }catch(error){$('history-status').textContent=`Forecast failed: ${error.message}`}
@@ -406,7 +406,7 @@ async function loadTrafficFeed(){
   $('feed-timestamp').textContent=data.latest_recorded_at?`Latest record ${new Date(data.latest_recorded_at).toLocaleString()}`:'No timestamp provided';
   $('feed-row-count').textContent=`${data.sites.length} sites`;
   const body=$('traffic-feed-rows');body.replaceChildren();
-  for(const site of data.sites){const row=document.createElement('tr');const values=[site.site_id,site.recorded_at?new Date(site.recorded_at).toLocaleString():'—',String(site.lane_count),site.flow_lane_samples?site.measured_vehicles_per_cycle.toFixed(1):'—',site.occupancy_lane_samples?`${site.average_detector_occupancy_percent.toFixed(1)}%`:'—'];for(const value of values){const cell=document.createElement('td');cell.textContent=value;row.append(cell)}body.append(row)}
+  for(const site of data.sites){const row=document.createElement('tr');const values=[site.site_id,site.recorded_at?new Date(site.recorded_at).toLocaleString():'-',String(site.lane_count),site.flow_lane_samples?site.measured_vehicles_per_cycle.toFixed(1):'-',site.occupancy_lane_samples?`${site.average_detector_occupancy_percent.toFixed(1)}%`:'-'];for(const value of values){const cell=document.createElement('td');cell.textContent=value;row.append(cell)}body.append(row)}
   if(!data.sites.length){const row=document.createElement('tr'),cell=document.createElement('td');cell.colSpan=5;cell.textContent='The feed returned no site records.';row.append(cell);body.append(row)}
   status.textContent=`Connected to ${data.source}. Retrieved ${new Date(data.retrieved_at).toLocaleTimeString()}. ${data.measurement_note}`;
  }catch(error){status.textContent=`Could not load the live city feed. ${error.message} Try refreshing in a moment.`;}
