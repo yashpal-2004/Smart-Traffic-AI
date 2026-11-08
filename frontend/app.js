@@ -46,7 +46,7 @@ function showSnapshot(data) {
   const other = data.transitioning ? 'amber' : 'red';
   document.querySelector(`#signal-ns .lamp.${ns ? active : other}`).classList.add('on');
   document.querySelector(`#signal-ew .lamp.${ns ? other : active}`).classList.add('on');
-  $('phase-arrows').textContent = ns ? '↕' : '↔';
+  $('phase-arrows').innerHTML = `<svg class="ui-icon"><use href="#i-${ns ? 'up-down' : 'left-right'}"></use></svg>`;
   $('decision-note').textContent = data.transitioning ? 'Amber transition · vehicles stopped' : 'Serving active approaches';
   const names={fixed_time:'Fixed-time baseline',q_learning:'Hold/switch Q-learning',duration_q_learning:'Green-duration Q-learning'};
   $('policy-name').textContent = names[data.controller] || data.controller;
@@ -54,7 +54,7 @@ function showSnapshot(data) {
   if(data.controller==='duration_q_learning' && data.green_target){$('decision-note').textContent=`Chosen green target · ${data.green_target}s`}
   $('run-state').classList.toggle('running', !data.paused);
   $('run-state').innerHTML = `<i></i> ${data.paused ? 'PAUSED' : 'RUNNING'}`;
-  $('run-button').innerHTML = data.paused ? '<span class="play-icon">▶</span> Resume simulation' : '<span>Ⅱ</span> Pause simulation';
+  $('run-button').innerHTML = data.paused ? '<svg class="ui-icon"><use href="#i-play"></use></svg><span>Resume simulation</span>' : '<svg class="ui-icon"><use href="#i-pause"></use></svg><span>Pause simulation</span>';
   $('served-progress').style.width = `${Math.min(100, data.served / 3)}%`;
   drawHistory(data.history || []);
 }
