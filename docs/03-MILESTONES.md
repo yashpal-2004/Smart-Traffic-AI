@@ -42,5 +42,12 @@ Status key: `NOT STARTED`, `IN PROGRESS`, `BLOCKED`, `DONE`.
 - [x] Finish a clean-clone startup smoke check and record the exact outcome.
 **Acceptance:** clean clone setup works; all claims trace to reproducible results; limitations are visible.
 
+## M7 — Public traffic feed integration (DONE)
+- [x] Add a read-only adapter for Brisbane City Council's public signal-volume feed.
+- [x] Expose current site summaries through the API and display flow, detector occupancy, and feed age in a dedicated dashboard page.
+- [x] Show source attribution, license, measurement units, data freshness, and the non-control limitation in the UI and documentation.
+- [x] Confirm the dashboard loads from a clean page session and close the milestone.
+**Acceptance:** live public measurements can be read and explored; missing/upstream errors are visible; the app never sends commands to external signals or presents lane identifiers as directions.
+
 ## Work protocol
 Complete one milestone at a time. At each handoff, update this file and `05-DECISIONS-AND-PROGRESS.md` with changes, commands run, outcomes, and next exact task. Never mark a milestone done without its acceptance checks.

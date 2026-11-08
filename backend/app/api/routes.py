@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from hashlib import sha256
 import os
 import subprocess
+from urllib.error import HTTPError, URLError
 
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,6 +21,7 @@ from app.agents.q_learning import QLearningAgent, train_episode
 from app.agents.duration_q_learning import DurationQLearningAgent, DURATIONS, train_duration_episode
 from app.evaluation.runner import evaluate
 from app.simulator.environment import SCENARIOS, SignalConfig, TrafficEnvironment
+from app.traffic_feed import fetch_live_intersections
 
 
 class CreateRunRequest(BaseModel):
@@ -109,6 +111,14 @@ def serialize_snapshot(run: Run) -> dict:
 @router.get("/health")
 def health():
     return {"status": "ok", "service": "smart-traffic-ai"}
+
+
+@router.get("/traffic/live")
+def live_traffic():
+    try:
+        return fetch_live_intersections()
+    except (HTTPError, URLError, TimeoutError, OSError, ValueError) as exc:
+        raise HTTPException(503, f"Live traffic feed is temporarily unavailable: {exc}") from exc
 
 
 @router.get("/scenarios")

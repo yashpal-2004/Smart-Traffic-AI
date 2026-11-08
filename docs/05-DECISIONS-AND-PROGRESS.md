@@ -195,3 +195,13 @@
 - Release contents: current architecture and setup documentation, architecture diagram, dashboard screenshot, accessibility/responsive review, and sample JSON/CSV evaluation exports with protocol and limitations.
 - Automated test suite: not run as part of this release step.
 - Next exact step: begin the next milestone from `03-MILESTONES.md` after release review.
+
+
+### 2026-11-08 — M7 public traffic feed integration
+- Status: DONE.
+- Added: `GET /api/traffic/live` reads Brisbane City Council's open intersection-volume feed and groups the latest returned lane records by signal-controller site. The City Feed dashboard presents site count, returned record count, data age, measured vehicles per controller cycle, and detector occupancy.
+- Data handling: lane IDs remain opaque and are not assigned compass directions. The UI labels the integration read-only and describes the data units and geographic coverage. Upstream errors are surfaced as API 503 responses and dashboard status text.
+- Source/license: Brisbane City Council, Traffic Management — Intersection volume, CC BY 4.0; linked with attribution in the dashboard and README.
+- Verification: Python modules compiled successfully. Live API smoke request returned 100 records across 56 sites; browser view loaded the feed and displayed the site count and source/measurement note. No automated test suite was run.
+- Limitation: the live feed is observational only and is not connected to the simulator's demand generator or to signal-control equipment. It reflects Brisbane Council operated intersections and depends on upstream availability.
+- Next exact step: plan M8 around time-series history and data-backed demand-profile evaluation, keeping real-world signal actuation out of scope.

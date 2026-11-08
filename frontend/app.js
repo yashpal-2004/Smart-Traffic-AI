@@ -187,7 +187,24 @@ function exportReportJson(){if(!latestReport)return;downloadReport(JSON.stringif
 document.querySelectorAll('.nav-item').forEach(button=>button.addEventListener('click',()=>{
  document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x===button));
  document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));
- const page=button.dataset.page;$(`${page}-page`).classList.remove('hidden');$('page-title').textContent=page[0].toUpperCase()+page.slice(1);
+ const page=button.dataset.page;$(`${page}-page`).classList.remove('hidden');$('page-title').textContent=page==='city-feed'?'City Feed':page[0].toUpperCase()+page.slice(1);
+ if(page==='city-feed')loadTrafficFeed();
 }));
+$('traffic-refresh').addEventListener('click',loadTrafficFeed);
+function formatFeedAge(seconds){if(seconds==null)return 'Unknown';if(seconds<60)return `${seconds}s`;if(seconds<3600)return `${Math.floor(seconds/60)}m`;return `${Math.floor(seconds/3600)}h`}
+async function loadTrafficFeed(){
+ const button=$('traffic-refresh'),status=$('traffic-feed-status');button.disabled=true;button.textContent='Refreshing…';status.textContent='Fetching the latest public signal records…';
+ try{
+  const data=await request('/traffic/live');
+  $('feed-site-count').textContent=data.site_count.toLocaleString();$('feed-record-count').textContent=data.record_count.toLocaleString();$('feed-age').textContent=formatFeedAge(data.age_seconds);
+  $('feed-timestamp').textContent=data.latest_recorded_at?`Latest record ${new Date(data.latest_recorded_at).toLocaleString()}`:'No timestamp provided';
+  $('feed-row-count').textContent=`${data.sites.length} sites`;
+  const body=$('traffic-feed-rows');body.replaceChildren();
+  for(const site of data.sites){const row=document.createElement('tr');const values=[site.site_id,site.recorded_at?new Date(site.recorded_at).toLocaleString():'—',String(site.lane_count),site.flow_lane_samples?site.measured_vehicles_per_cycle.toFixed(1):'—',site.occupancy_lane_samples?`${site.average_detector_occupancy_percent.toFixed(1)}%`:'—'];for(const value of values){const cell=document.createElement('td');cell.textContent=value;row.append(cell)}body.append(row)}
+  if(!data.sites.length){const row=document.createElement('tr'),cell=document.createElement('td');cell.colSpan=5;cell.textContent='The feed returned no site records.';row.append(cell);body.append(row)}
+  status.textContent=`Connected to ${data.source}. Retrieved ${new Date(data.retrieved_at).toLocaleTimeString()}. ${data.measurement_note}`;
+ }catch(error){status.textContent=`Could not load the live city feed. ${error.message} Try refreshing in a moment.`;}
+ finally{button.disabled=false;button.textContent='Refresh feed'}
+}
 $('api-status').classList.add('offline');request('/health').then(()=>{$('api-status').classList.remove('offline');$('api-status').innerHTML='<i></i> API ONLINE';return createRun()}).catch(()=>{$('api-status').classList.add('offline');$('api-status').innerHTML='<i></i> API OFFLINE';toast('Start the backend API to connect the simulation.')});
 request('/model').then(model=>{$('model-status').textContent=model.trained?`Hold/switch model · ${model.states} states · Duration model · ${model.duration_states} states`:'No trained model yet · train before interpreting Q-learning results'}).catch(()=>{$('model-status').textContent='Model status unavailable'});

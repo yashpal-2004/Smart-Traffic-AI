@@ -9,7 +9,7 @@
 
 ## Component boundaries
 
-`backend/app/simulator/` owns seeded arrivals, queues, phases, transitions, movement, and metrics. `agents/` contains fixed-time, hold/switch Q-learning, and green-duration semi-Markov Q-learning policies. `evaluation/` executes matched seeds and returns episode-level results, summaries, paired deltas, and intervals. `api/` validates inputs, manages process-local runs and training, and serializes reports. `frontend/` renders the user workflow and sends JSON requests; it does not simulate traffic itself.
+`backend/app/simulator/` owns seeded arrivals, queues, phases, transitions, movement, and metrics. `agents/` contains fixed-time, hold/switch Q-learning, and green-duration semi-Markov Q-learning policies. `evaluation/` executes matched seeds and returns episode-level results, summaries, paired deltas, and intervals. `api/` validates inputs, manages process-local runs and training, and serializes reports. `traffic_feed.py` reads and normalizes the read-only Brisbane City Council public feed. `frontend/` renders the user workflow and sends JSON requests; it does not simulate traffic itself.
 
 ## Runtime flow
 
@@ -39,9 +39,10 @@ Live runs and training progress are in memory and are lost on server restart. Q-
 - `POST /api/runs/{id}/control/{pause|resume|reset}`
 - `POST /api/training`; `GET /api/training`
 - `POST /api/evaluations`
+- `GET /api/traffic/live` (read-only public sensor summaries; upstream errors return 503)
 
 See FastAPI's generated `/docs` page while the service is running for request and response schemas.
 
 ## Constraints
 
-This is an educational single-intersection model and is not for real-world signal control. It has no authentication, database, multi-user isolation, external telemetry, or production deployment configuration. For deployments without Git metadata, `SMART_TRAFFIC_SOURCE_REVISION` can supply the source identifier recorded in evaluation metadata.
+The simulator remains an educational single-intersection model and is not for real-world signal control. The city feed is observational only: measured flow is per signal-controller cycle, detector occupancy is a percentage, and opaque lane identifiers are not mapped to the simulator's compass approaches. The Brisbane dataset covers only intersections operated by Brisbane City Council and is subject to upstream availability. The app has no authentication, database, multi-user isolation, control connection to signals, or production deployment configuration. For deployments without Git metadata, `SMART_TRAFFIC_SOURCE_REVISION` can supply the source identifier recorded in evaluation metadata.
