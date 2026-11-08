@@ -144,9 +144,9 @@
     "semantic_hash": ""
   },
   "frontend/app.js": {
-    "mtime": 1794123726.731726,
-    "seen": 1794123807.2655559,
-    "ast_hash": "3302b33e2541042d53b4dc6253ca241d",
+    "mtime": 1794125446.258261,
+    "seen": 1794125447.5452878,
+    "ast_hash": "c6a4a61bea5ec6dc31b7b098a776b7a7",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
