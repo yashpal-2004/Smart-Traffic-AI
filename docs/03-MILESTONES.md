@@ -37,7 +37,7 @@ Status key: `NOT STARTED`, `IN PROGRESS`, `BLOCKED`, `DONE`.
 
 ## M6 — Polish and release (IN PROGRESS)
 - [x] Add clean-clone setup docs, a dashboard screenshot, and an architecture diagram.
-- [ ] Add a sample JSON and CSV evaluation export.
+- [x] Add a sample JSON and CSV evaluation export.
 - [x] Review responsive breakpoints and accessibility semantics/focus treatment.
 - [ ] Finish a clean-clone startup smoke check and record the exact outcome.
 **Acceptance:** clean clone setup works; all claims trace to reproducible results; limitations are visible.

@@ -178,3 +178,11 @@
 - Milestones: M2 and M3 evidence is now recorded as complete; M5's three-page workflow, live snapshots, and responsive/accessibility implementation are complete. M6 remains open for sample exports and a clean-clone startup smoke check.
 - Review: inspected the 1080px, 800px, 700px, 520px, and 900px responsive rules; reduced-motion handling remains enabled. Browser comparison screenshot captured at the desktop viewport. Keyboard navigation tooling did not expose a direct keypress API, so focus behavior is supported by native controls and explicit `:focus-visible` styling but was not manually key-driven in this review.
 - Next exact step: produce tracked sample JSON/CSV from a clean source revision, then smoke-start the documented clean-clone setup and complete M6.
+
+
+### 2026-11-08 — M6 sample evaluation artifacts
+- Status: release preparation; clean-clone smoke check pending.
+- Added: complete JSON and typed-row CSV sample from the committed release source (`fe7c4dc`), with a clean source-tree indicator and local checkpoint fingerprints.
+- Protocol: 500 steps, five fixed seeds across all three demand scenarios; 45 episode records. The report includes 187 CSV records across protocol, summaries, paired results, deltas, and episodes.
+- Sample means: fixed-time 11.29s wait, hold/switch 16.80s, duration 13.70s. This fresh sample is separate from the longer controlled 1,500-episode result reported in the project overview.
+- Next exact step: install requirements from a clean clone, start its API and static frontend on isolated local ports, check the health route and frontend document, then close M6.
