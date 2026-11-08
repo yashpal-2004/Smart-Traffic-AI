@@ -78,9 +78,9 @@
     "semantic_hash": ""
   },
   "docs/05-DECISIONS-AND-PROGRESS.md": {
-    "mtime": 1794117466.4114997,
-    "seen": 1794117467.383181,
-    "ast_hash": "f7409d1636ccad3d108eca7befd054f9",
+    "mtime": 1794117644.7152934,
+    "seen": 1794117645.628618,
+    "ast_hash": "228b3cf421c8c3a91036256699df0aed",
     "semantic_hash": ""
   },
   "backend/app/agents/q_learning.py": {
@@ -126,9 +126,9 @@
     "semantic_hash": ""
   },
   "backend/app/api/routes.py": {
-    "mtime": 1794117443.3213208,
-    "seen": 1794117467.3831522,
-    "ast_hash": "c8aae4684a0efad212cb3c4d5b4cc577",
+    "mtime": 1794117557.632551,
+    "seen": 1794117615.881879,
+    "ast_hash": "1dc048b5909044a95c9c177dc7ff61e6",
     "semantic_hash": ""
   },
   "backend/app/main.py": {
@@ -144,9 +144,9 @@
     "semantic_hash": ""
   },
   "frontend/app.js": {
-    "mtime": 1794117443.5463026,
-    "seen": 1794117467.383169,
-    "ast_hash": "2fb94fe66e66818abfd54af1fc16d15a",
+    "mtime": 1794117550.2907965,
+    "seen": 1794117615.881896,
+    "ast_hash": "dd6e91fabd4d9d3e0555b969e671ac17",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -156,9 +156,9 @@
     "semantic_hash": ""
   },
   "frontend/index.html": {
-    "mtime": 1794117443.5119996,
-    "seen": 1794117467.383183,
-    "ast_hash": "987eb0d41addba3f7df32c20b67f71dc",
+    "mtime": 1794117637.8411334,
+    "seen": 1794117645.628621,
+    "ast_hash": "7f4d44fd405951f683b9966d7ff0c6b6",
     "semantic_hash": ""
   },
   "frontend/README.md": {

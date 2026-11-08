@@ -103,3 +103,11 @@
 - Changed: added green-duration Q-learning to the run controller choices; each green phase chooses a target duration and then switches through the configured amber period; API snapshots expose the current target; UI identifies the policy and displays its chosen target. The option returns a clear conflict response before a duration model has been trained.
 - Verification: 18 backend checks pass, including training then starting/stepping a duration-policy run. Browser check confirms controller selector entry, live step, and target display (30s in observed step).
 - Next exact step: expose duration action/reward traces in the Learn page and provide longer, selectable training settings before more controlled policy tuning.
+
+
+### 2026-11-08 — Configurable training and policy guide
+- Status: implemented and browser-verified.
+- Changed: Compare now accepts a selectable episode count and steps per episode, trains both Q-learning variants, and reports live learned-state counts for each. The Learn page explains the duration action set and interval-based reward; comparison copy names all three policies.
+- Verification: all 18 backend tests pass. Browser check confirmed both numeric controls, the training button, and duration/reward explanations.
+- Known limitation: the two tabular agents are still trained sequentially in one process-local background job; training progress is not resumable after a server restart.
+- Next exact step: add evaluation controls for seed count and make matched per-seed deltas easier to inspect before further policy tuning.

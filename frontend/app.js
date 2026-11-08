@@ -117,18 +117,19 @@ $('train-button').addEventListener('click',async()=>{
   const button=$('train-button');button.disabled=true;button.textContent='Training…';
   $('training-progress').classList.remove('hidden');$('training-status').textContent='Training policy…';
   try{
-    await request('/training',{method:'POST',body:JSON.stringify({episodes:500,steps:500})});
+    const episodes=Number($('train-episodes').value), steps=Number($('train-steps').value);
+    await request('/training',{method:'POST',body:JSON.stringify({episodes,steps})});
     let status;
     do{
       await new Promise(resolve=>setTimeout(resolve,500));status=await request('/training');
       $('training-count').textContent=`${status.completed} / ${status.total} episodes`;
       $('training-bar').style.width=`${status.total?100*status.completed/status.total:0}%`;
-      $('training-status').textContent=status.status==='running'?'Training policy…':status.status==='queued'?'Starting training…':'Training policy…';
+      $('training-status').textContent=status.status==='running'?`Training both policies · ${status.states||0} / ${status.duration_states||0} learned states`:status.status==='queued'?'Starting training…':'Training both policies…';
     }while(['queued','running'].includes(status.status));
     if(status.status==='failed')throw new Error(status.error||'Training failed');
-    toast(`Training complete · ${status.states} states learned`);$('training-status').textContent='Training complete';await createRun();
+    toast(`Training complete · hold/switch ${status.states} states · duration ${status.duration_states} states`);$('training-status').textContent=`Training complete · ${status.states} / ${status.duration_states} states`;await createRun();
   }catch(e){toast(e.message);$('training-status').textContent='Training failed'}
-  finally{button.disabled=false;button.textContent='Train Q-learning'}
+  finally{button.disabled=false;button.textContent='Train both agents'}
 });
 function renderReport(report){
  latestReport=report;

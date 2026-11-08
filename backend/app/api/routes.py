@@ -211,7 +211,8 @@ def train_model(request: TrainRequest):
                 duration_model._rng.seed(rng.randrange(1_000_000))
                 train_duration_episode(TrafficEnvironment(scenario, env_seed), duration_model, request.steps)
                 rewards.append(metrics["reward"])
-                training_job.update(completed=episode + 1)
+                training_job.update(completed=episode + 1, states=len(agent.q_values),
+                                    duration_states=len(duration_model.q_values))
             agent.save(MODEL_PATH)
             duration_model.save(DURATION_MODEL_PATH)
             trained_agent, duration_agent, model_trained = agent, duration_model, True
