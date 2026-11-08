@@ -181,8 +181,17 @@
 
 
 ### 2026-11-08 — M6 sample evaluation artifacts
-- Status: release preparation; clean-clone smoke check pending.
+- Status: release preparation; sample export complete.
 - Added: complete JSON and typed-row CSV sample from the committed release source (`fe7c4dc`), with a clean source-tree indicator and local checkpoint fingerprints.
 - Protocol: 500 steps, five fixed seeds across all three demand scenarios; 45 episode records. The report includes 187 CSV records across protocol, summaries, paired results, deltas, and episodes.
 - Sample means: fixed-time 11.29s wait, hold/switch 16.80s, duration 13.70s. This fresh sample is separate from the longer controlled 1,500-episode result reported in the project overview.
-- Next exact step: install requirements from a clean clone, start its API and static frontend on isolated local ports, check the health route and frontend document, then close M6.
+- Next exact step: smoke-start a clean clone on isolated local ports and record the result.
+
+
+### 2026-11-08 — M6 polish and release complete
+- Status: DONE.
+- Clean-clone smoke check: cloned the committed repository to `/tmp`, created a virtual environment with host site packages enabled, installed `backend/requirements.txt`, then started the cloned API on port 8001 and static frontend on port 4174. `/api/health` returned `{"status":"ok","service":"smart-traffic-ai"}`, `/api/model` returned HTTP 200, and the served frontend contained the Signal Lab title. Both temporary servers were stopped afterward.
+- Environment scope: this confirms the clean source clone and startup path on this machine. Because the venv inherited the machine's installed Python packages, it does not independently prove a fresh network dependency installation on another machine.
+- Release contents: current architecture and setup documentation, architecture diagram, dashboard screenshot, accessibility/responsive review, and sample JSON/CSV evaluation exports with protocol and limitations.
+- Automated test suite: not run as part of this release step.
+- Next exact step: begin the next milestone from `03-MILESTONES.md` after release review.
