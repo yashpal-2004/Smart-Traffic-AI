@@ -13,6 +13,7 @@ import re
 import subprocess
 import sqlite3
 from urllib.error import HTTPError, URLError
+from typing import Any, Literal
 
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,6 +31,7 @@ from app.traffic_history import forecast_site, history_summary, save_snapshot, s
 class CreateRunRequest(BaseModel):
     scenario: str = "balanced"
     controller: str = "fixed_time"
+    engine: Literal["python", "sumo"] = "python"
     seed: int = 0
     green_seconds: int = Field(default=20, ge=1, le=120)
 
@@ -51,11 +53,13 @@ class TrainRequest(BaseModel):
 
 @dataclass
 class Run:
-    env: TrafficEnvironment
+    env: Any
     controller: str
     fixed: FixedTimeController
     agent: QLearningAgent
     history: list[dict]
+    engine: str = "python"
+    model_trained: bool = False
     green_target: int | None = None
     paused: bool = True
 
@@ -65,9 +69,11 @@ training_lock = Lock()
 training_job: dict = {"status": "idle", "completed": 0, "total": 0}
 MODEL_PATH = Path(__file__).resolve().parents[2] / "artifacts" / "q_table.json"
 DURATION_MODEL_PATH = Path(__file__).resolve().parents[2] / "artifacts" / "duration_q_table.json"
+SUMO_MODEL_PATH = Path(__file__).resolve().parents[2] / "artifacts" / "sumo_q_table.json"
 trained_agent = QLearningAgent.load(MODEL_PATH) if MODEL_PATH.exists() else QLearningAgent(epsilon=0, epsilon_min=0)
 model_trained = MODEL_PATH.exists()
 duration_agent = DurationQLearningAgent.load(DURATION_MODEL_PATH) if DURATION_MODEL_PATH.exists() else None
+sumo_agent: QLearningAgent | None = None
 router = APIRouter(prefix="/api")
 
 
@@ -90,6 +96,12 @@ def source_revision_metadata() -> dict:
                 "source_working_tree_clean": None}
 
 
+def load_sumo_agent() -> QLearningAgent | None:
+    global sumo_agent
+    sumo_agent = QLearningAgent.load(SUMO_MODEL_PATH) if SUMO_MODEL_PATH.is_file() else None
+    return sumo_agent
+
+
 def serialize_snapshot(run: Run) -> dict:
     snap = run.env.snapshot()
     return {
@@ -105,9 +117,10 @@ def serialize_snapshot(run: Run) -> dict:
         "max_queue": snap.max_total_queue,
         "paused": run.paused,
         "controller": run.controller,
+        "engine": run.engine,
         "green_target": run.green_target,
         "history": run.history[-500:],
-        "model_trained": model_trained,
+        "model_trained": run.model_trained,
     }
 
 
@@ -166,6 +179,23 @@ def scenarios():
             for s in SCENARIOS.values()]
 
 
+@router.get("/simulators")
+def simulators():
+    from importlib.util import find_spec
+    from app.simulator.sumo.environment import _binary
+
+    sumo_available = (find_spec("traci") is not None and bool(_binary("sumo"))
+                      and bool(_binary("netconvert")))
+    sumo_policy = load_sumo_agent()
+    return {
+        "simulators": [
+            {"id": "python", "name": "Python traffic model", "available": True},
+            {"id": "sumo", "name": "Eclipse SUMO", "available": sumo_available},
+        ],
+        "sumo_model_trained": sumo_policy is not None,
+    }
+
+
 @router.post("/runs")
 def create_run(request: CreateRunRequest):
     if request.scenario not in SCENARIOS:
@@ -174,12 +204,30 @@ def create_run(request: CreateRunRequest):
         raise HTTPException(422, "unknown controller")
     if request.controller == "duration_q_learning" and duration_agent is None:
         raise HTTPException(409, "train the duration Q-learning model before using it")
+    if request.engine == "sumo" and request.controller == "duration_q_learning":
+        raise HTTPException(422, "green-duration Q-learning is not available in the SUMO simulator yet")
+    sumo_policy = load_sumo_agent() if request.engine == "sumo" else None
+    if request.engine == "sumo" and request.controller == "q_learning" and sumo_policy is None:
+        raise HTTPException(409, "No SUMO-trained Q-table found. Run the SUMO evaluation script once to train one.")
     config = SignalConfig(max_green=max(30, request.green_seconds))
     green = min(request.green_seconds, config.max_green)
     run_id = str(uuid4())
-    run = Run(TrafficEnvironment(SCENARIOS[request.scenario], request.seed, config),
-              request.controller, FixedTimeController(green, config),
-              duration_agent if request.controller == "duration_q_learning" else trained_agent, [])
+    agent = (sumo_policy if request.engine == "sumo" else
+             duration_agent if request.controller == "duration_q_learning" else trained_agent)
+    if request.engine == "sumo":
+        from app.simulator.sumo.environment import SumoEnvironment
+        if not simulators()["simulators"][1]["available"]:
+            raise HTTPException(503, "SUMO is unavailable. Install backend/requirements-sumo.txt and ensure sumo and netconvert are available.")
+        try:
+            env = SumoEnvironment(SCENARIOS[request.scenario], request.seed, config, steps=1_000_000)
+        except (RuntimeError, OSError, subprocess.SubprocessError) as exc:
+            raise HTTPException(503, str(exc)) from exc
+    else:
+        env = TrafficEnvironment(SCENARIOS[request.scenario], request.seed, config)
+    run = Run(env, request.controller, FixedTimeController(green, config), agent, [],
+              engine=request.engine,
+              model_trained=(sumo_policy is not None if request.engine == "sumo" else
+                             duration_agent is not None if request.controller == "duration_q_learning" else model_trained))
     runs[run_id] = run
     return {"id": run_id, **serialize_snapshot(run)}
 
@@ -190,6 +238,17 @@ def get_run(run_id: str):
     if run is None:
         raise HTTPException(404, "run not found")
     return serialize_snapshot(run)
+
+
+@router.delete("/runs/{run_id}")
+def delete_run(run_id: str):
+    run = runs.pop(run_id, None)
+    if run is None:
+        raise HTTPException(404, "run not found")
+    close = getattr(run.env, "close", None)
+    if close:
+        close()
+    return {"deleted": True}
 
 
 @router.post("/runs/{run_id}/step")
@@ -283,9 +342,12 @@ def run_evaluation(request: EvaluationRequest):
 
 @router.get("/model")
 def model_status():
+    sumo_policy = load_sumo_agent()
     return {"trained": model_trained, "states": len(trained_agent.q_values),
             "duration_trained": duration_agent is not None,
-            "duration_states": len(duration_agent.q_values) if duration_agent else 0}
+            "duration_states": len(duration_agent.q_values) if duration_agent else 0,
+            "sumo_trained": sumo_policy is not None,
+            "sumo_states": len(sumo_policy.q_values) if sumo_policy else 0}
 
 
 @router.post("/training")
@@ -338,5 +400,5 @@ def training_status():
 app = FastAPI(title="Smart Traffic AI", version="0.1.0",
               description="Educational four-way traffic signal simulator API")
 app.add_middleware(CORSMiddleware, allow_origins=["http://127.0.0.1:4173", "http://localhost:4173"],
-                   allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
+                   allow_methods=["GET", "POST", "DELETE"], allow_headers=["Content-Type"])
 app.include_router(router)

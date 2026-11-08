@@ -5,11 +5,10 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
-from types import SimpleNamespace
 from statistics import mean
 from dataclasses import dataclass, field
 
-from app.simulator.environment import Approach, Phase, Scenario, SignalConfig
+from app.simulator.environment import Approach, Phase, Scenario, SignalConfig, Snapshot
 
 SUMO_DIR = Path(__file__).resolve().parent
 
@@ -54,6 +53,7 @@ class SumoEnvironment:
         if not binary:
             raise RuntimeError(f"{sumo_binary} not found. Install SUMO and ensure its bin directory is on PATH.")
         self.traci, self.scenario, self.seed, self.config = traci, scenario, seed, config
+        self.sumo_binary, self._requested_amber = sumo_binary, amber_seconds
         self.steps_limit = steps
         self.time = self.phase_elapsed = 0
         self.phase = Phase.NORTH_SOUTH
@@ -88,7 +88,7 @@ class SumoEnvironment:
             # especially when installed from the Python package on macOS.
             self.traci.start(command,label=self._connection_label,numRetries=30)
             self.conn=self.traci.getConnection(self._connection_label)
-            self.conn.trafficlight.setRedYellowGreenState("center","GrrG")
+            self.conn.trafficlight.setRedYellowGreenState("center", "GGrr")
         except Exception:
             self._temp.cleanup()
             raise
@@ -127,7 +127,18 @@ class SumoEnvironment:
             lane=f"{edge}_0"
             result[approach]=self.conn.lane.getLastStepHaltingNumber(lane)
         self.queues={a:[None]*n for a,n in result.items()}
-        return SimpleNamespace(queues=result)
+        return Snapshot(
+            time=self.time,
+            phase=self.phase,
+            transitioning=self.transitioning,
+            phase_elapsed=self.phase_elapsed,
+            queues=result,
+            arrived=self.metrics.total_arrived,
+            served=self.metrics.total_served,
+            total_wait_seconds=self.metrics.total_wait_seconds,
+            average_wait_seconds=self.metrics.average_wait_seconds,
+            max_total_queue=self.metrics.max_total_queue,
+        )
 
     def step(self, switch=False):
         if switch:
@@ -151,6 +162,13 @@ class SumoEnvironment:
         snap=self.snapshot();queue=sum(snap.queues.values())
         self.metrics.total_wait_seconds+=queue;self.metrics.max_total_queue=max(self.metrics.max_total_queue,queue)
         return snap
+
+    def reset(self):
+        scenario, seed, config, steps = self.scenario, self.seed, self.config, self.steps_limit
+        sumo_binary, amber = self.sumo_binary, self._requested_amber
+        self.close()
+        self.__init__(scenario, seed, config, steps, sumo_binary, amber)
+        return self.snapshot()
 
     def close(self):
         try:

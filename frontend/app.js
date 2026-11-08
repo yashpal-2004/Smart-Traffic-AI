@@ -1,11 +1,12 @@
 const API = window.TRAFFIC_API_URL || 'http://127.0.0.1:8000/api';
 const $ = (id) => document.getElementById(id);
-let runId = null;
+let runId = sessionStorage.getItem('signal-lab-run-id');
 let timer = null;
 let snapshot = null;
 let episode = 0;
 let seed = Math.floor(Math.random() * 9000) + 1000;
 let latestReport = null;
+let simulatorCapabilities = null;
 
 function toast(message) {
   const node = $('toast'); node.textContent = message; node.classList.add('show');
@@ -50,6 +51,9 @@ function showSnapshot(data) {
   $('decision-note').textContent = data.transitioning ? 'Amber transition · vehicles stopped' : 'Serving active approaches';
   const names={fixed_time:'Fixed-time baseline',q_learning:'Hold/switch Q-learning',duration_q_learning:'Green-duration Q-learning'};
   $('policy-name').textContent = names[data.controller] || data.controller;
+  $('engine-note').textContent = data.engine === 'sumo'
+    ? `Active engine: Eclipse SUMO via TraCI${data.model_trained && data.controller === 'q_learning' ? ' · SUMO-trained Q-table' : ''}. The dashboard shows live queue and signal state.`
+    : 'Active engine: the project’s seeded Python traffic model.';
   $('policy-desc').textContent = data.controller === 'fixed_time' ? 'Cycles between phases on a fixed schedule.' : data.controller === 'duration_q_learning' ? 'Selects a target green duration using its learned policy.' : 'Chooses to hold or switch using its learned Q-table.';
   if(data.controller==='duration_q_learning' && data.green_target){$('decision-note').textContent=`Chosen green target · ${data.green_target}s`}
   $('run-state').classList.toggle('running', !data.paused);
@@ -87,20 +91,27 @@ function drawHistory(history) {
 }
 async function createRun() {
   stopTimer();
+  if(runId){const previousRun=runId;runId=null;sessionStorage.removeItem('signal-lab-run-id');await request(`/runs/${previousRun}`,{method:'DELETE'}).catch(()=>{})}
   seed = Math.floor(Math.random() * 9000) + 1000;
   episode++;
-  const data = await request('/runs',{method:'POST',body:JSON.stringify({scenario:$('scenario').value,controller:$('controller').value,seed})});
-  runId=data.id;showSnapshot(data);
+  const data = await request('/runs',{method:'POST',body:JSON.stringify({engine:$('engine').value,scenario:$('scenario').value,controller:$('controller').value,seed})});
+  runId=data.id;sessionStorage.setItem('signal-lab-run-id',runId);showSnapshot(data);
 }
 async function doStep(steps=1) {
   if(!runId) await createRun();
   const data=await request(`/runs/${runId}/step`,{method:'POST',body:JSON.stringify({steps})});showSnapshot(data);
 }
-function stopTimer(){if(timer){clearInterval(timer);timer=null}}
+function stopTimer(){if(timer){clearTimeout(timer);timer=null}}
+async function runTick(){
+ try{
+  await doStep(1);
+  if(timer!==null)timer=setTimeout(runTick,180);
+ }catch(error){stopTimer();toast(error.message)}
+}
 async function runLoop(){
   if(!runId) await createRun();
   if(snapshot?.paused){const data=await request(`/runs/${runId}/control/resume`,{method:'POST'});showSnapshot(data)}
-  stopTimer();timer=setInterval(()=>doStep(1).catch(e=>{stopTimer();toast(e.message)}),180);
+  stopTimer();timer=setTimeout(runTick,0);
 }
 async function pause(){stopTimer();if(runId){const data=await request(`/runs/${runId}/control/pause`,{method:'POST'});showSnapshot(data)}}
 $('run-button').addEventListener('click',()=> (snapshot&&!snapshot.paused ? pause():runLoop()).catch(e=>toast(e.message)));
@@ -108,6 +119,28 @@ $('step-button').addEventListener('click',()=>doStep().catch(e=>toast(e.message)
 $('reset-button').addEventListener('click',async()=>{stopTimer();try{if(!runId)await createRun();const data=await request(`/runs/${runId}/control/reset`,{method:'POST'});showSnapshot(data)}catch(e){toast(e.message)}});
 $('scenario').addEventListener('change',()=>createRun().catch(e=>toast(e.message)));
 $('controller').addEventListener('change',()=>createRun().catch(e=>toast(e.message)));
+function syncEngineControls(){
+ const engine=$('engine').value,isSumo=engine==='sumo';
+ const qOption=$('controller').querySelector('option[value="q_learning"]');
+ const durationOption=$('controller').querySelector('option[value="duration_q_learning"]');
+ qOption.disabled=isSumo&&simulatorCapabilities?.sumo_model_trained===false;
+ durationOption.disabled=isSumo;
+ if(isSumo&&($('controller').value==='duration_q_learning'||qOption.disabled))$('controller').value='fixed_time';
+ if(!isSumo){$('engine-note').textContent='The project’s seeded Python traffic model is available without optional packages.';return}
+ if(!simulatorCapabilities?.sumo_available){$('engine-note').textContent='Eclipse SUMO is unavailable. Install backend/requirements-sumo.txt and restart the API.';return}
+ $('engine-note').textContent=simulatorCapabilities.sumo_model_trained
+  ? 'Eclipse SUMO runs the intersection through TraCI. Hold/switch Q-learning uses the SUMO-trained checkpoint.'
+  : 'Eclipse SUMO is ready for fixed-time control. Run the SUMO evaluation command once to create its Q-learning checkpoint.';
+}
+async function loadSimulatorCapabilities(){
+ simulatorCapabilities=await request('/simulators');
+ const sumoOption=$('engine').querySelector('option[value="sumo"]');
+ const sumoInfo=simulatorCapabilities.simulators.find(item=>item.id==='sumo');
+ simulatorCapabilities.sumo_available=Boolean(sumoInfo?.available);
+ sumoOption.disabled=!simulatorCapabilities.sumo_available;
+ syncEngineControls();
+}
+$('engine').addEventListener('change',()=>{syncEngineControls();createRun().catch(e=>toast(e.message))});
 function selectedCompareScenarios(){return [...document.querySelectorAll('.scenario-checkbox:checked')].map(option=>option.value)}
 function updateScenarioPicker(){
  const selected=selectedCompareScenarios(),count=selected.length;
@@ -264,5 +297,5 @@ async function loadTrafficFeed(){
  }catch(error){status.textContent=`Could not load the live city feed. ${error.message} Try refreshing in a moment.`;}
  finally{button.disabled=false;button.textContent='Refresh feed'}
 }
-$('api-status').classList.add('offline');request('/health').then(()=>{$('api-status').classList.remove('offline');$('api-status').innerHTML='<i></i> API ONLINE';return createRun()}).catch(()=>{$('api-status').classList.add('offline');$('api-status').innerHTML='<i></i> API OFFLINE';toast('Start the backend API to connect the simulation.')});
+$('api-status').classList.add('offline');request('/health').then(async()=>{$('api-status').classList.remove('offline');$('api-status').innerHTML='<i></i> API ONLINE';await loadSimulatorCapabilities();return createRun()}).catch(()=>{$('api-status').classList.add('offline');$('api-status').innerHTML='<i></i> API OFFLINE';$('engine-note').textContent='Start the backend API to choose a simulator.';toast('Start the backend API to connect the simulation.')});
 request('/model').then(model=>{$('model-status').textContent=model.trained?`Hold/switch model · ${model.states} states · Duration model · ${model.duration_states} states`:'No trained model yet · train before interpreting Q-learning results'}).catch(()=>{$('model-status').textContent='Model status unavailable'});

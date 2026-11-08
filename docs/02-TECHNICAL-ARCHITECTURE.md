@@ -36,8 +36,8 @@ Traffic history is stored locally at ignored `backend/data/traffic_history.sqlit
 
 ## API
 
-- `GET /api/health`, `GET /api/scenarios`, `GET /api/model`
-- `POST /api/runs`; `GET /api/runs/{id}`; `POST /api/runs/{id}/step`
+- `GET /api/health`, `GET /api/scenarios`, `GET /api/simulators`, `GET /api/model`
+- `POST /api/runs`; `GET /api/runs/{id}`; `DELETE /api/runs/{id}`; `POST /api/runs/{id}/step`
 - `POST /api/runs/{id}/control/{pause|resume|reset}`
 - `POST /api/training`; `GET /api/training`
 - `POST /api/evaluations`
@@ -50,6 +50,6 @@ See FastAPI's generated `/docs` page while the service is running for request an
 
 The simulator remains an educational single-intersection model and is not for real-world signal control. The city feed is observational only: measured flow is per signal-controller cycle, detector occupancy is a percentage, and opaque lane identifiers are not mapped to the simulator's compass approaches. The Brisbane dataset covers only intersections operated by Brisbane City Council and is subject to upstream availability. Forecasts are one source cycle ahead, not hourly demand forecasts. The first 24-observation site evaluation is documented in `docs/sample-evaluation/traffic-forecast-site-102.json`; its 5-point holdout favored persistence over ridge regression, so it supports no model-improvement claim. Forecasted aggregate site counts are not currently used as directional simulator arrivals. The app has no authentication, multi-user isolation, control connection to signals, or production deployment configuration. For deployments without Git metadata, `SMART_TRAFFIC_SOURCE_REVISION` can supply the source identifier recorded in evaluation metadata.
 
-## Optional SUMO evaluation backend
+## Optional SUMO runtime and evaluation backend
 
-`backend/app/simulator/sumo/` contains the four-way network source and TraCI adapter. `backend/scripts/run_sumo_evaluation.py` trains the hold/switch table on distinct scenario/seed draws, then evaluates fixed-time and learned policies on matched seeds. It emits the same episode-level fields as the toy runner plus the simulator protocol. The SUMO backend is optional and does not replace the browser simulator. Install `eclipse-sumo` and `traci` from `backend/requirements-sumo.txt`; the `sumo` and `netconvert` executables must be on `PATH` or included in the Eclipse SUMO package.
+`backend/app/simulator/sumo/` contains the four-way network source and TraCI adapter. `GET /api/simulators` reports whether SUMO and its SUMO-trained policy are available. `POST /api/runs` accepts `engine: "python"` or `engine: "sumo"`; both engines return the same live snapshot fields to the dashboard. The Simulate page can switch engines and closes the old run before creating the new one. SUMO fixed-time control is available after installing the optional dependencies. SUMO hold/switch Q-learning uses `backend/artifacts/sumo_q_table.json`, created by `backend/scripts/run_sumo_evaluation.py`. The evaluation runner trains on distinct scenario/seed draws, then evaluates fixed-time and learned policies on matched seeds. Install `eclipse-sumo` and `traci` from `backend/requirements-sumo.txt`; the `sumo` and `netconvert` executables must be on `PATH` or included in the Eclipse SUMO package.
