@@ -78,3 +78,4 @@ body{background:var(--bg);color:var(--text)}
 .result-value,.comparison-bar-label,.results-toolbar{border-color:#E5DCCB;color:#71695D}
 .bar-row{color:#82796A}.bar-row i{background:#66866C}.bar-row.q i{background:#B58A48}
 .result-value b{color:#39352F;font-weight:650}.export-button{background:#E8DECB;border-color:#D8CEBB;color:#39352F}.export-button:hover{background:#DFD4C0}
+.lamp.red.on{fill:#D94A45;filter:none}.lamp.amber.on{fill:#E5A82E;filter:none}.lamp.green.on{fill:#478A55;filter:none}.legend-dot.green{background:#478A55!important}.legend-dot.amber{background:#E5A82E!important}.legend-dot.red{background:#D94A45!important}.car{fill:#648BA8;stroke:#F8F2E7;stroke-width:1}

@@ -42,10 +42,10 @@ function showSnapshot(data) {
   const ns = data.phase === 'north_south';
   document.querySelectorAll('#signal-ns .lamp').forEach(x=>x.classList.remove('on'));
   document.querySelectorAll('#signal-ew .lamp').forEach(x=>x.classList.remove('on'));
-  const active = data.transitioning ? 'amber' : 'green';
-  const other = data.transitioning ? 'amber' : 'red';
-  document.querySelector(`#signal-ns .lamp.${ns ? active : other}`).classList.add('on');
-  document.querySelector(`#signal-ew .lamp.${ns ? other : active}`).classList.add('on');
+  const nsSignal = document.querySelector(`#signal-ns .lamp.${data.transitioning ? (ns ? 'amber' : 'red') : (ns ? 'green' : 'red')}`);
+  const ewSignal = document.querySelector(`#signal-ew .lamp.${data.transitioning ? (ns ? 'red' : 'amber') : (ns ? 'red' : 'green')}`);
+  nsSignal.classList.add('on');
+  ewSignal.classList.add('on');
   $('phase-arrows').innerHTML = `<svg class="ui-icon"><use href="#i-${ns ? 'up-down' : 'left-right'}"></use></svg>`;
   $('decision-note').textContent = data.transitioning ? 'Amber transition · vehicles stopped' : 'Serving active approaches';
   const names={fixed_time:'Fixed-time baseline',q_learning:'Hold/switch Q-learning',duration_q_learning:'Green-duration Q-learning'};
@@ -61,7 +61,7 @@ function showSnapshot(data) {
 function phaseName(phase) { return phase === 'north_south' ? 'North ↔ South' : 'East ↔ West'; }
 function drawCars(direction, count) {
   const group = $(`cars-${direction}`); group.replaceChildren();
-  const colors = ['#53d4b1','#79a9ef','#e9b45f','#df8291','#b89aed'];
+  const vehicleColor = '#648BA8';
   const positions = {
     north: i => [275 + (i%2)*24, 14 + Math.floor(i/2)*24, 15, 24],
     south: i => [330 - (i%2)*24, 402 - Math.floor(i/2)*24, 15, 24],
@@ -70,7 +70,7 @@ function drawCars(direction, count) {
   };
   for(let i=0;i<Math.min(count,12);i++){
     const [x,y,w,h]=positions[direction](i); const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
-    rect.setAttribute('x',x);rect.setAttribute('y',y);rect.setAttribute('width',w);rect.setAttribute('height',h);rect.setAttribute('rx','4');rect.setAttribute('class','car');rect.setAttribute('fill',colors[i%colors.length]);group.append(rect);
+    rect.setAttribute('x',x);rect.setAttribute('y',y);rect.setAttribute('width',w);rect.setAttribute('height',h);rect.setAttribute('rx','4');rect.setAttribute('class','car');rect.setAttribute('fill',vehicleColor);group.append(rect);
   }
 }
 function drawHistory(history) {
