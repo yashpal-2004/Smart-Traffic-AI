@@ -154,8 +154,11 @@ def run_evaluation(request: EvaluationRequest):
     unknown = set(request.scenarios) - set(SCENARIOS)
     if unknown:
         raise HTTPException(422, f"unknown scenarios: {', '.join(sorted(unknown))}")
-    return evaluate([SCENARIOS[name] for name in request.scenarios], request.seeds,
-                    request.steps, SignalConfig(), trained_agent)
+    report = evaluate([SCENARIOS[name] for name in request.scenarios], request.seeds,
+                      request.steps, SignalConfig(), trained_agent)
+    report["protocol"]["trained_policy"] = model_trained
+    report["protocol"]["model_state_count"] = len(trained_agent.q_values)
+    return report
 
 
 @router.get("/model")

@@ -33,6 +33,7 @@ class ApiTests(unittest.TestCase):
         response = self.client.post('/api/evaluations', json={'scenarios':['balanced'], 'seeds':[2], 'steps':20})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['summary']['fixed_time']['sample_count'], 1)
+        self.assertIn('trained_policy', response.json()['protocol'])
 
     def test_run_history_and_training_route(self):
         created = self.client.post('/api/runs', json={}).json()

@@ -5,6 +5,7 @@ let timer = null;
 let snapshot = null;
 let episode = 0;
 let seed = Math.floor(Math.random() * 9000) + 1000;
+let latestReport = null;
 
 function toast(message) {
   const node = $('toast'); node.textContent = message; node.classList.add('show');
@@ -128,11 +129,28 @@ $('train-button').addEventListener('click',async()=>{
   finally{button.disabled=false;button.textContent='Train Q-learning'}
 });
 function renderReport(report){
- const target=$('compare-results');target.replaceChildren();const grid=document.createElement('div');grid.className='results-grid';
+ latestReport=report;
+ const target=$('compare-results');target.replaceChildren();
+ const toolbar=document.createElement('div');toolbar.className='results-toolbar';
+ const quality=document.createElement('span');quality.textContent=report.protocol.trained_policy?`Trained policy · ${report.protocol.model_state_count} learned states`:'Untrained policy · train before interpreting model performance';
+ const exportButton=document.createElement('button');exportButton.className='export-button';exportButton.textContent='Export episode CSV';exportButton.addEventListener('click',exportEpisodes);
+ toolbar.append(quality,exportButton);target.append(toolbar);
+ const bars=document.createElement('div');bars.className='comparison-bars';
+ for(const [label,key] of [['Mean served wait','average_wait_seconds'],['Mean queue length','average_queue_length'],['Mean vehicles served','vehicles_served']]){
+   const card=document.createElement('div');card.className='comparison-bar';const heading=document.createElement('div');heading.className='comparison-bar-label';heading.textContent=label;card.append(heading);
+   const max=Math.max(1,...Object.values(report.summary).map(x=>x[key].mean));
+   for(const [name,colorClass] of [['fixed_time',''],['q_learning','q']]){const row=document.createElement('div');row.className=`bar-row ${colorClass}`;const labelNode=document.createElement('span');labelNode.textContent=name==='fixed_time'?'Fixed':'Q-learn';const bar=document.createElement('i');bar.style.width=`${Math.max(2,report.summary[name][key].mean/max*75)}%`;const value=document.createElement('span');value.textContent=report.summary[name][key].mean.toFixed(1);row.append(labelNode,bar,value);card.append(row)}bars.append(card)
+ }
+ target.append(bars);const grid=document.createElement('div');grid.className='results-grid';
  for(const [name,m] of Object.entries(report.summary)){const col=document.createElement('article');col.className='result-column';const title=document.createElement('h3');title.textContent=name==='fixed_time'?'Fixed-time baseline':'Q-learning agent';col.append(title);
   const rows=[['Mean served wait',`${m.average_wait_seconds.mean.toFixed(2)} s`],['Median served wait',`${m.average_wait_seconds.median.toFixed(2)} s`],['Mean queue length',m.average_queue_length.mean.toFixed(2)],['Mean vehicles served',m.vehicles_served.mean.toFixed(1)],['Episodes',m.sample_count]];
   rows.forEach(([label,value])=>{const row=document.createElement('div');row.className='result-value';const l=document.createElement('span');l.textContent=label;const v=document.createElement('b');v.textContent=value;row.append(l,v);col.append(row)});grid.append(col)}
- target.append(grid);const note=document.createElement('p');note.className='compare-note';note.textContent=`Matched seeds: ${report.protocol.paired_seeds.join(', ')} · ${report.protocol.steps_per_episode} steps each. ${report.protocol.wait_definition}.`;target.append(note)
+ target.append(grid);const note=document.createElement('p');note.className='compare-note';note.textContent=`Matched seeds: ${report.protocol.paired_seeds.join(', ')} · ${report.protocol.steps_per_episode} steps each · ${report.protocol.training_data_excluded?'training data excluded':''}. ${report.protocol.wait_definition}.`;target.append(note)
+}
+function exportEpisodes(){
+ if(!latestReport)return;const rows=latestReport.episodes;const columns=Object.keys(rows[0]||{});const escape=value=>`"${String(value??'').replaceAll('"','""')}"`;
+ const csv=[columns.map(escape).join(','),...rows.map(row=>columns.map(key=>escape(row[key])).join(','))].join('\n');
+ const url=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));const link=document.createElement('a');link.href=url;link.download='smart-traffic-evaluation.csv';link.click();URL.revokeObjectURL(url)
 }
 document.querySelectorAll('.nav-item').forEach(button=>button.addEventListener('click',()=>{
  document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x===button));
@@ -140,3 +158,4 @@ document.querySelectorAll('.nav-item').forEach(button=>button.addEventListener('
  const page=button.dataset.page;$(`${page}-page`).classList.remove('hidden');$('page-title').textContent=page[0].toUpperCase()+page.slice(1);
 }));
 $('api-status').classList.add('offline');request('/health').then(()=>{$('api-status').classList.remove('offline');$('api-status').innerHTML='<i></i> API ONLINE';return createRun()}).catch(()=>{$('api-status').classList.add('offline');$('api-status').innerHTML='<i></i> API OFFLINE';toast('Start the backend API to connect the simulation.')});
+request('/model').then(model=>{$('model-status').textContent=model.trained?`Trained model available · ${model.states} states`:'No trained model yet · train before interpreting Q-learning results'}).catch(()=>{$('model-status').textContent='Model status unavailable'});

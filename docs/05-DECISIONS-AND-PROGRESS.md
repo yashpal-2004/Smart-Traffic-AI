@@ -65,3 +65,16 @@
 - Verification: all 16 backend tests pass, including queue history and background training completion polling.
 - Known limitations: training jobs and progress are process-local and not resumable after server restart; API evaluation still runs synchronously.
 - Next exact step: verify the browser progress display, then improve comparison interpretation/export and revisit model quality.
+
+
+### 2026-11-08 — Comparison reporting and CSV export
+- Status: implemented; browser verification pending.
+- Changed: evaluation responses identify whether a trained policy was used and its Q-table state count; Compare page shows model status, side-by-side metric bars, trained/untrained interpretation, and downloadable episode-level CSV.
+- Verification: all 16 backend tests pass, including trained-policy metadata in evaluation responses.
+- Known limitations: the visualization scales each metric independently and CSV export is client-side; no confidence intervals or paired significance tests are presented.
+- Next exact step: verify the comparison display in browser and continue improving experimental rigor (paired deltas and clearer queue/wait definitions).
+
+
+### 2026-11-08 — Browser check of trained comparison
+- Verification: reloaded dashboard, confirmed API online and model status at 38 states; ran default matched comparison (3 scenarios × 3 seeds, 500 steps). Fixed-time mean served wait 11.77s, mean queue 13.41, served 545.8; Q-learning 14.24s, 16.39, served 543.0.
+- Interpretation: on this small run, the trained policy still underperforms; the UI reports results without claiming a gain. Episode CSV export control is visible.
