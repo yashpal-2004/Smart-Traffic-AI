@@ -188,9 +188,52 @@ document.querySelectorAll('.nav-item').forEach(button=>button.addEventListener('
  document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x===button));
  document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));
  const page=button.dataset.page;$(`${page}-page`).classList.remove('hidden');$('page-title').textContent=page==='city-feed'?'City Feed':page[0].toUpperCase()+page.slice(1);
- if(page==='city-feed')loadTrafficFeed();
+ if(page==='city-feed'){loadTrafficFeed();loadTrafficHistory()}
 }));
 $('traffic-refresh').addEventListener('click',loadTrafficFeed);
+$('traffic-capture').addEventListener('click',captureTrafficSnapshot);
+$('forecast-button').addEventListener('click',runTrafficForecast);
+async function loadTrafficHistory(){
+ try{
+  const data=await request('/traffic/history'),select=$('forecast-site'),selected=select.value;
+  $('history-observation-count').textContent=`${data.total_observations.toLocaleString()} observations · ${data.site_count} sites`;
+  select.replaceChildren();const prompt=document.createElement('option');prompt.value='';prompt.textContent=data.sites.length?'Select a signal site':'Capture a snapshot to discover sites';select.append(prompt);
+  for(const site of data.sites){const option=document.createElement('option');option.value=site.site_id;option.textContent=`Site ${site.site_id} · ${site.observations} samples`;select.append(option)}
+  if(data.sites.some(site=>site.site_id===selected))select.value=selected;
+ }catch(error){$('history-status').textContent=`Local history is unavailable: ${error.message}`}
+}
+async function captureTrafficSnapshot(){
+ const button=$('traffic-capture'),site=$('forecast-site').value;button.disabled=true;button.textContent='Capturing…';$('history-status').textContent=site?`Fetching recent complete cycle records for site ${site}…`:'Fetching the public feed and storing new source timestamps…';
+ try{const result=await request(`/traffic/history/collect${site?`?site_id=${encodeURIComponent(site)}`:''}`,{method:'POST'});$('history-status').textContent=`Saved ${result.inserted} new observations${site?` for site ${site}`:''}; ${result.already_present_or_missing_timestamp} were duplicates or missing timestamps. ${site?'Selected-site records were backfilled where available. Keep collecting after each source update to build a validation set.':`The source feed currently reports ${result.site_count} sites; select one site before targeted collection for a complete local series.`}`;await loadTrafficHistory();await loadTrafficFeed()}
+ catch(error){$('history-status').textContent=`Snapshot collection failed: ${error.message}`}
+ finally{button.disabled=false;button.textContent='Capture snapshot'}
+}
+async function runTrafficForecast(){
+ const site=$('forecast-site').value;if(!site){$('history-status').textContent='Select a site after capturing at least one traffic snapshot.';return}
+ const button=$('forecast-button');button.disabled=true;button.textContent='Training & evaluating…';$('history-status').textContent=`Building a chronological one-step forecast for site ${site}…`;
+ try{
+  const report=await request(`/traffic/forecast?site_id=${encodeURIComponent(site)}`);
+  if(report.status==='insufficient_data'){$('forecast-section').classList.add('hidden');$('history-status').textContent=`Site ${site} has ${report.observation_count} unique observations; at least ${report.minimum_observations} are required. Run the collector every 60 seconds and retry after new source timestamps arrive.`;return}
+  $('forecast-section').classList.remove('hidden');$('history-status').textContent=`Site ${site}: evaluated on a chronological holdout. Lower MAE is better; the model is useful only if it beats the persistence baseline on held-out data.`;
+  $('forecast-sample-count').textContent=report.metrics.ridge_regression.sample_count;
+  $('forecast-naive-mae').textContent=report.metrics.persistence_baseline.mae.toFixed(2);
+  $('forecast-model-mae').textContent=report.metrics.ridge_regression.mae.toFixed(2);
+  $('forecast-next-value').textContent=report.next_cycle_forecast.ridge_regression.toFixed(1);
+  $('forecast-next-time').textContent=`Model count / cycle · ${new Date(report.next_cycle_forecast.estimated_for).toLocaleTimeString()}`;
+  $('forecast-validation-window').textContent=`${new Date(report.validation_start).toLocaleString()} — ${new Date(report.validation_end).toLocaleString()}`;
+  $('forecast-method-note').textContent=`${report.validation_method}. Features: previous three cycle counts and hour-of-day sine/cosine. Regularization ${report.model.regularization}. Forecast horizon is one next observed source cycle (estimated median interval ${report.next_cycle_forecast.estimated_interval_seconds}s); it is not an hourly forecast.`;
+  drawForecastChart(report.validation);
+ }catch(error){$('history-status').textContent=`Forecast failed: ${error.message}`}
+ finally{button.disabled=false;button.textContent='Train & evaluate forecast'}
+}
+function drawForecastChart(rows){
+ const svg=$('forecast-chart'),ns='http://www.w3.org/2000/svg';svg.replaceChildren();if(!rows?.length)return;
+ const values=rows.flatMap(row=>[row.actual,row.naive,row.model]),min=Math.min(0,...values),max=Math.max(1,...values),left=48,right=878,top=20,bottom=218;
+ const x=index=>left+(rows.length===1?0:index*(right-left)/(rows.length-1));const y=value=>bottom-(value-min)*(bottom-top)/(max-min||1);
+ for(let tick=0;tick<=4;tick++){const yy=top+tick*(bottom-top)/4,line=document.createElementNS(ns,'line');line.setAttribute('x1',left);line.setAttribute('x2',right);line.setAttribute('y1',yy);line.setAttribute('y2',yy);line.setAttribute('class','forecast-grid');svg.append(line);const label=document.createElementNS(ns,'text');label.setAttribute('x','4');label.setAttribute('y',yy+4);label.textContent=(max-(max-min)*tick/4).toFixed(1);label.setAttribute('class','forecast-axis-label');svg.append(label)}
+ for(const [key,klass] of [['actual','actual-line'],['naive','naive-line'],['model','model-line']]){const path=document.createElementNS(ns,'polyline');path.setAttribute('points',rows.map((row,index)=>`${x(index)},${y(row[key])}`).join(' '));path.setAttribute('class',klass);path.setAttribute('fill','none');svg.append(path)}
+ const start=document.createElementNS(ns,'text');start.setAttribute('x',left);start.setAttribute('y','248');start.textContent=new Date(rows[0].recorded_at).toLocaleTimeString();start.setAttribute('class','forecast-axis-label');svg.append(start);const end=document.createElementNS(ns,'text');end.setAttribute('x',right);end.setAttribute('y','248');end.setAttribute('text-anchor','end');end.textContent=new Date(rows[rows.length-1].recorded_at).toLocaleTimeString();end.setAttribute('class','forecast-axis-label');svg.append(end);
+}
 function formatFeedAge(seconds){if(seconds==null)return 'Unknown';if(seconds<60)return `${seconds}s`;if(seconds<3600)return `${Math.floor(seconds/60)}m`;return `${Math.floor(seconds/3600)}h`}
 async function loadTrafficFeed(){
  const button=$('traffic-refresh'),status=$('traffic-feed-status');button.disabled=true;button.textContent='Refreshing…';status.textContent='Fetching the latest public signal records…';

@@ -9,7 +9,7 @@
 
 ## Component boundaries
 
-`backend/app/simulator/` owns seeded arrivals, queues, phases, transitions, movement, and metrics. `agents/` contains fixed-time, hold/switch Q-learning, and green-duration semi-Markov Q-learning policies. `evaluation/` executes matched seeds and returns episode-level results, summaries, paired deltas, and intervals. `api/` validates inputs, manages process-local runs and training, and serializes reports. `traffic_feed.py` reads and normalizes the read-only Brisbane City Council public feed. `frontend/` renders the user workflow and sends JSON requests; it does not simulate traffic itself.
+`backend/app/simulator/` owns seeded arrivals, queues, phases, transitions, movement, and metrics. `agents/` contains fixed-time, hold/switch Q-learning, and green-duration semi-Markov Q-learning policies. `evaluation/` executes matched seeds and returns episode-level results, summaries, paired deltas, and intervals. `api/` validates inputs, manages process-local runs and training, and serializes reports. `traffic_feed.py` reads and normalizes the read-only Brisbane City Council public feed. `traffic_history.py` stores unique timestamp/site observations in local SQLite and evaluates a per-site next-cycle ridge regression against a persistence baseline. `frontend/` renders the user workflow and sends JSON requests; it does not simulate traffic itself.
 
 ## Runtime flow
 
@@ -22,6 +22,8 @@
 ## State and persistence
 
 Live runs and training progress are in memory and are lost on server restart. Q-table checkpoints are saved locally to ignored `backend/artifacts/q_table.json` and `duration_q_table.json` after successful training. They are not included in a clean clone. Evaluation reports are downloaded by the user and are not uploaded or stored remotely.
+
+Traffic history is stored locally at ignored `backend/data/traffic_history.sqlite3` by default; set `TRAFFIC_HISTORY_DB` to override the path. Start `python3 backend/scripts/collect_traffic_history.py --interval 60 --site-id "YOUR_SITE_ID"` from the repository root to poll one controller site. The API also supports manual capture with `POST /api/traffic/history/collect?site_id=...`; selected-site capture backfills the recent records available for that site. An initial unfiltered snapshot is useful for discovering site IDs. Duplicate source timestamps are ignored. The forecaster requires at least 24 unique observations for a site.
 
 ## Evaluation contract
 
@@ -40,9 +42,10 @@ Live runs and training progress are in memory and are lost on server restart. Q-
 - `POST /api/training`; `GET /api/training`
 - `POST /api/evaluations`
 - `GET /api/traffic/live` (read-only public sensor summaries; upstream errors return 503)
+- `POST /api/traffic/history/collect`; `GET /api/traffic/history`; `GET /api/traffic/forecast?site_id=...`
 
 See FastAPI's generated `/docs` page while the service is running for request and response schemas.
 
 ## Constraints
 
-The simulator remains an educational single-intersection model and is not for real-world signal control. The city feed is observational only: measured flow is per signal-controller cycle, detector occupancy is a percentage, and opaque lane identifiers are not mapped to the simulator's compass approaches. The Brisbane dataset covers only intersections operated by Brisbane City Council and is subject to upstream availability. The app has no authentication, database, multi-user isolation, control connection to signals, or production deployment configuration. For deployments without Git metadata, `SMART_TRAFFIC_SOURCE_REVISION` can supply the source identifier recorded in evaluation metadata.
+The simulator remains an educational single-intersection model and is not for real-world signal control. The city feed is observational only: measured flow is per signal-controller cycle, detector occupancy is a percentage, and opaque lane identifiers are not mapped to the simulator's compass approaches. The Brisbane dataset covers only intersections operated by Brisbane City Council and is subject to upstream availability. Forecasts are one source cycle ahead, not hourly demand forecasts; a time-based holdout is reported against the persistence baseline, and no performance claim should be made until enough real observations have been collected. Forecasted aggregate site counts are not currently used as directional simulator arrivals. The app has no authentication, multi-user isolation, control connection to signals, or production deployment configuration. For deployments without Git metadata, `SMART_TRAFFIC_SOURCE_REVISION` can supply the source identifier recorded in evaluation metadata.

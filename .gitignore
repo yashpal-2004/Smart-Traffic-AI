@@ -7,3 +7,5 @@ venv/
 backend/artifacts/
 
 artifacts/
+
+backend/data/

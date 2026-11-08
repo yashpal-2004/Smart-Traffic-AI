@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
+import re
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -75,3 +76,51 @@ def fetch_live_intersections(limit: int = 100) -> dict:
             "latest_recorded_at": latest, "age_seconds": age_seconds,
             "record_count": len(rows), "site_count": len(sites), "sites": sites,
             "measurement_note": "Measured vehicles are reported per signal-controller cycle; occupancy is detector occupancy percent. Lane IDs are not compass directions."}
+
+
+def fetch_site_observations(site_id: str, limit: int = 100) -> dict:
+    """Fetch recent complete cycle rows for one controller site for backfill."""
+    site_id = str(site_id)
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,32}", site_id):
+        raise ValueError("site_id contains unsupported characters")
+    query = urlencode({"limit": max(1, min(limit, 100)), "order_by": "recorded desc",
+                       "where": f"tsc = '{site_id}'"})
+    request = Request(f"{FEED_URL}?{query}", headers={"Accept": "application/json", "User-Agent": "Smart-Traffic-AI/1.0"})
+    with urlopen(request, timeout=8) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+    rows = payload.get("results")
+    if not isinstance(rows, list):
+        raise ValueError("upstream traffic feed returned an unexpected response")
+
+    by_cycle: dict[str, dict] = {}
+    for row in rows:
+        recorded = str(row.get("recorded") or "")
+        if not recorded:
+            continue
+        item = by_cycle.setdefault(recorded, {"site_id": site_id, "recorded_at": recorded, "lane_count": 0,
+            "measured_vehicles_per_cycle": 0.0, "flow_lane_samples": 0,
+            "average_detector_occupancy_percent": None, "occupancy_lane_samples": 0})
+        item["lane_count"] += 1
+        flows = [_number(row.get(f"mf{i}")) for i in range(1, 5)]
+        valid_flows = [value for value in flows if value is not None]
+        item["measured_vehicles_per_cycle"] += sum(valid_flows)
+        item["flow_lane_samples"] += len(valid_flows)
+        occupancy = [_number(row.get(f"ds{i}")) for i in range(1, 5)]
+        valid_occupancy = [value for value in occupancy if value is not None]
+        if valid_occupancy:
+            prior_n = item["occupancy_lane_samples"]
+            current = item["average_detector_occupancy_percent"] or 0
+            item["average_detector_occupancy_percent"] = ((current * prior_n + sum(valid_occupancy)) /
+                                                            (prior_n + len(valid_occupancy)))
+            item["occupancy_lane_samples"] += len(valid_occupancy)
+    cycles = sorted(by_cycle.values(), key=lambda row: row["recorded_at"])
+    for cycle in cycles:
+        cycle["measured_vehicles_per_cycle"] = round(cycle["measured_vehicles_per_cycle"], 2)
+        value = cycle["average_detector_occupancy_percent"]
+        if value is not None:
+            cycle["average_detector_occupancy_percent"] = round(value, 2)
+    latest = cycles[-1]["recorded_at"] if cycles else None
+    return {"source": "Brisbane City Council", "source_url": "https://data.brisbane.qld.gov.au/explore/dataset/traffic-data-at-intersection/",
+            "license": "CC BY 4.0", "retrieved_at": datetime.now(timezone.utc).isoformat(),
+            "latest_recorded_at": latest, "record_count": len(rows), "site_count": 1 if cycles else 0,
+            "sites": cycles, "measurement_note": "Per-cycle lane measurements aggregated for the selected controller site."}

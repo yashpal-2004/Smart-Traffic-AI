@@ -205,3 +205,12 @@
 - Verification: Python modules compiled successfully. Live API smoke request returned 100 records across 56 sites; browser view loaded the feed and displayed the site count and source/measurement note. No automated test suite was run.
 - Limitation: the live feed is observational only and is not connected to the simulator's demand generator or to signal-control equipment. It reflects Brisbane Council operated intersections and depends on upstream availability.
 - Next exact step: plan M8 around time-series history and data-backed demand-profile evaluation, keeping real-world signal actuation out of scope.
+
+
+### 2026-11-08 — M8 traffic forecasting workflow implementation
+- Status: IN PROGRESS; implementation is available, but real-data validation is pending collection.
+- Added: local SQLite storage for unique `(site_id, source_timestamp)` snapshots; a repeatable CLI collector and manual API capture endpoint; selected-site capture/backfill to avoid the public API's broad 100-row page truncating lanes; per-site history summaries; chronological 80/20 holdout evaluation; persistence and ridge-regression forecasts with MAE/RMSE; and a City Feed workflow to collect, choose a site, train/evaluate, and inspect validation predictions.
+- Model: ridge-regularized linear regression over the previous three cycle counts plus hour-of-day sine/cosine. Validation is one-step rolling: each held-out prediction uses preceding observed counts, and its MAE/RMSE is compared with carrying forward the previous count. The next-cycle estimate uses the median observed timestamp interval.
+- Verification: Python modules compiled; live API collection persisted 63 site observations, and selected-site backfill added four unique records for site 102 (five total). Browser showed the history controls and correctly reported `insufficient_data` with 5 of 24 observations. No automated test suite was run.
+- No performance claim: the actual model-vs-baseline error metrics are unavailable until the collector captures at least 24 distinct source timestamps for one site.
+- Next exact step: select a site shown in City Feed and run `python3 backend/scripts/collect_traffic_history.py --interval 60 --site-id "YOUR_SITE_ID"` for enough unique provider updates, then evaluate that site and record whether regression beats persistence. If it does not, report that result rather than tune against the holdout.

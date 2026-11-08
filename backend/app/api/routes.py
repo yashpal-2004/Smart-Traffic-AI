@@ -9,7 +9,9 @@ from random import Random
 from datetime import datetime, timezone
 from hashlib import sha256
 import os
+import re
 import subprocess
+import sqlite3
 from urllib.error import HTTPError, URLError
 
 from fastapi import APIRouter, FastAPI, HTTPException
@@ -21,7 +23,8 @@ from app.agents.q_learning import QLearningAgent, train_episode
 from app.agents.duration_q_learning import DurationQLearningAgent, DURATIONS, train_duration_episode
 from app.evaluation.runner import evaluate
 from app.simulator.environment import SCENARIOS, SignalConfig, TrafficEnvironment
-from app.traffic_feed import fetch_live_intersections
+from app.traffic_feed import fetch_live_intersections, fetch_site_observations
+from app.traffic_history import forecast_site, history_summary, save_snapshot, site_history
 
 
 class CreateRunRequest(BaseModel):
@@ -119,6 +122,42 @@ def live_traffic():
         return fetch_live_intersections()
     except (HTTPError, URLError, TimeoutError, OSError, ValueError) as exc:
         raise HTTPException(503, f"Live traffic feed is temporarily unavailable: {exc}") from exc
+
+
+@router.post("/traffic/history/collect")
+def collect_traffic_history(site_id: str | None = None):
+    if site_id is not None and not re.fullmatch(r"[A-Za-z0-9_-]{1,32}", site_id):
+        raise HTTPException(422, "site_id contains unsupported characters")
+    try:
+        feed = fetch_site_observations(site_id) if site_id else fetch_live_intersections()
+        stored = save_snapshot(feed)
+        return {**stored, "site_count": feed["site_count"], "record_count": feed["record_count"],
+                "source": feed["source"], "history": history_summary()}
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    except (HTTPError, URLError, TimeoutError, OSError, sqlite3.Error) as exc:
+        raise HTTPException(503, f"Traffic history collection failed: {exc}") from exc
+
+
+@router.get("/traffic/history")
+def get_traffic_history(site_id: str | None = None, limit: int = 500):
+    try:
+        summary = history_summary()
+        return {**summary, "selected_site": site_id,
+                "observations": site_history(site_id, limit) if site_id else []}
+    except sqlite3.Error as exc:
+        raise HTTPException(503, f"Traffic history storage is unavailable: {exc}") from exc
+
+
+@router.get("/traffic/forecast")
+def get_traffic_forecast(site_id: str):
+    try:
+        report = forecast_site(site_id)
+    except (sqlite3.Error, ValueError) as exc:
+        raise HTTPException(422, f"Unable to forecast site {site_id}: {exc}") from exc
+    if report["status"] == "insufficient_data":
+        return report
+    return report
 
 
 @router.get("/scenarios")
