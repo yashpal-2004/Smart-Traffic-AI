@@ -145,3 +145,11 @@
 - Verification: live single-seed evaluation showed the correct unavailable-interval message and scenario cards; clicked the full-report export action.
 - Known limitation: browser download storage was not exposed for direct file inspection; episode details are embedded as JSON in a CSV cell.
 - Next exact step: verify downloaded file has every record type and valid CSV escaping, then add a JSON download option for direct machine ingestion.
+
+
+### 2026-11-08 — JSON report download and report identity
+- Status: implemented and browser-verified.
+- Changed: evaluation responses now include a unique report ID and UTC generation timestamp. Compare offers a structured JSON download alongside the full-report CSV; both filenames include the report ID, and CSV protocol rows include report metadata.
+- Verification: a live single-seed report displayed its ID and generation timestamp, showed both download controls, and triggered each export action. The one-sample interval message remained correct.
+- Known limitation: browser download storage was not exposed for file-content inspection; report IDs are generated per API response and are not persisted by the server.
+- Next exact step: add route/config and model checkpoint identifiers to the exported report so results retain more context for reproduction.

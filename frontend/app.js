@@ -137,8 +137,11 @@ function renderReport(report){
  const target=$('compare-results');target.replaceChildren();
  const toolbar=document.createElement('div');toolbar.className='results-toolbar';
  const quality=document.createElement('span');quality.textContent=report.protocol.trained_policy?`Trained policy · ${report.protocol.model_state_count} learned states`:'Untrained policy · train before interpreting model performance';
+ const reportMeta=document.createElement('span');reportMeta.className='report-meta';reportMeta.textContent=`Report ${report.metadata?.report_id?.slice(0,8)||'local'} · ${report.metadata?.generated_at?new Date(report.metadata.generated_at).toLocaleString():'timestamp unavailable'}`;reportMeta.title=report.metadata?.generated_at||'';
+ const actions=document.createElement('div');actions.className='export-actions';
  const exportButton=document.createElement('button');exportButton.className='export-button';exportButton.textContent='Export full report CSV';exportButton.title='Includes protocol, controller summaries, paired intervals, per-seed deltas, and full episode records.';exportButton.addEventListener('click',exportEpisodes);
- toolbar.append(quality,exportButton);target.append(toolbar);
+ const jsonButton=document.createElement('button');jsonButton.className='export-button';jsonButton.textContent='Download JSON';jsonButton.title='Download the complete report as structured JSON.';jsonButton.addEventListener('click',exportReportJson);
+ actions.append(exportButton,jsonButton);toolbar.append(quality,reportMeta,actions);target.append(toolbar);
  const bars=document.createElement('div');bars.className='comparison-bars';
  for(const [label,key] of [['Mean served wait','average_wait_seconds'],['Mean queue length','average_queue_length'],['Mean vehicles served','vehicles_served']]){
    const card=document.createElement('div');card.className='comparison-bar';const heading=document.createElement('div');heading.className='comparison-bar-label';heading.textContent=label;card.append(heading);
@@ -164,6 +167,7 @@ function exportEpisodes(){
  const columns=['record_type','scenario','seed','controller','metric','mean','median','population_stddev','ci95_low','ci95_high','sample_count','improvements','ties','value','details_json'];
  const rows=[];const add=(type,data={})=>rows.push({record_type:type,...data});
  add('protocol',{metric:'csv_record_types',value:'protocol; controller_summary; paired_summary_pooled; paired_summary_scenario; paired_delta; episode'});
+ for(const [key,value] of Object.entries(latestReport.metadata||{}))add('protocol',{metric:key,value});
  for(const [key,value] of Object.entries(latestReport.protocol||{}))add('protocol',{metric:key,value:Array.isArray(value)||typeof value==='object'?JSON.stringify(value):value});
  for(const [controller,metrics] of Object.entries(latestReport.summary||{}))for(const [metric,stats] of Object.entries(metrics)){
   if(metric==='sample_count')continue;add('controller_summary',{controller,metric,mean:stats.mean,median:stats.median,population_stddev:stats.population_stddev,sample_count:metrics.sample_count});
@@ -175,8 +179,11 @@ function exportEpisodes(){
  for(const episode of latestReport.episodes||[])add('episode',{scenario:episode.scenario,seed:episode.seed,controller:episode.controller,details_json:JSON.stringify(episode)});
  const escape=value=>`"${String(value??'').replaceAll('"','""')}"`;
  const csv=[columns.map(escape).join(','),...rows.map(row=>columns.map(key=>escape(row[key])).join(','))].join('\r\n');
- const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='smart-traffic-evaluation-report.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)
+ downloadReport(csv,'text/csv;charset=utf-8',`smart-traffic-evaluation-${reportFileId()}.csv`)
 }
+function reportFileId(){return (latestReport?.metadata?.report_id||new Date().toISOString().replaceAll(':','-')).slice(0,8)}
+function downloadReport(content,type,filename){const url=URL.createObjectURL(new Blob([content],{type}));const link=document.createElement('a');link.href=url;link.download=filename;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function exportReportJson(){if(!latestReport)return;downloadReport(JSON.stringify(latestReport,null,2),'application/json;charset=utf-8',`smart-traffic-evaluation-${reportFileId()}.json`)}
 document.querySelectorAll('.nav-item').forEach(button=>button.addEventListener('click',()=>{
  document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x===button));
  document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));

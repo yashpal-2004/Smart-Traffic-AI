@@ -6,6 +6,7 @@ from uuid import uuid4
 from pathlib import Path
 from threading import Lock, Thread
 from random import Random
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -176,6 +177,7 @@ def run_evaluation(request: EvaluationRequest):
         raise HTTPException(422, f"unknown scenarios: {', '.join(sorted(unknown))}")
     report = evaluate([SCENARIOS[name] for name in request.scenarios], request.seeds,
                       request.steps, SignalConfig(), trained_agent, duration_agent)
+    report["metadata"] = {"report_id": str(uuid4()), "generated_at": datetime.now(timezone.utc).isoformat()}
     report["protocol"]["trained_policy"] = model_trained
     report["protocol"]["model_state_count"] = len(trained_agent.q_values)
     return report
