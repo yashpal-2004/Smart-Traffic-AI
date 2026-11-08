@@ -64,3 +64,11 @@ body{background:var(--bg);color:var(--text)}
 .progress-track{height:6px;overflow:hidden;border-radius:999px;background:#E5DCCB}
 .progress-track i{display:block;height:100%;width:0;border-radius:inherit;background:#315F85;transition:width .2s ease}
 @media(max-width:520px){.training-progress{padding:12px}.progress-heading{gap:7px}.progress-heading strong{flex-basis:100%}}
+/* Signal-site selector and forecast action alignment */
+.history-controls{display:flex;align-items:flex-start;gap:12px;margin-top:14px;flex-wrap:wrap}
+.history-controls>label{display:grid;flex:0 1 420px;min-width:min(100%,280px);gap:7px;color:#82796A;font:9px 'DM Mono',monospace;letter-spacing:.6px}
+.history-controls select{width:100%;min-height:42px;padding:10px 38px 10px 12px;border:1px solid #D8CEBB;border-radius:9px;background:#FFF9EF;color:#39352F;font:12px Manrope,sans-serif;box-shadow:0 2px 5px #76684a08}
+.history-controls select:focus-visible{outline:2px solid #A9C4D7;outline-offset:2px;border-color:#648BA8}
+.site-picker-help{display:block;max-width:420px;color:#82796A;font:10px/1.45 Manrope,sans-serif;letter-spacing:0}
+.history-controls>#forecast-button{align-self:flex-start;margin-top:22px;min-height:42px;padding:0 15px;border-radius:9px}
+@media(max-width:700px){.history-controls{display:grid;grid-template-columns:minmax(0,1fr);gap:11px}.history-controls>label{min-width:0;width:100%}.history-controls>#forecast-button{margin-top:0;justify-self:start}}
