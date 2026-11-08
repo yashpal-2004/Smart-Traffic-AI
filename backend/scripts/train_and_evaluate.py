@@ -28,7 +28,7 @@ def main():
     report = evaluate(scenarios, [101, 202, 303, 404, 505], args.steps,
                       SignalConfig(), agent)
     write_report(report, args.output)
-    agent.save("artifacts/q_table.json")
+    agent.save("backend/artifacts/q_table.json")
     print(f"Wrote evaluation report to {args.output}")
     for name, metrics in report["summary"].items():
         print(f"{name}: wait={metrics['average_wait_seconds']['mean']:.2f}s, "
