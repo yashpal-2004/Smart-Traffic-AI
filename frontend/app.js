@@ -137,7 +137,7 @@ function renderReport(report){
  const target=$('compare-results');target.replaceChildren();
  const toolbar=document.createElement('div');toolbar.className='results-toolbar';
  const quality=document.createElement('span');quality.textContent=report.protocol.trained_policy?`Trained policy · ${report.protocol.model_state_count} learned states`:'Untrained policy · train before interpreting model performance';
- const exportButton=document.createElement('button');exportButton.className='export-button';exportButton.textContent='Export episode CSV';exportButton.addEventListener('click',exportEpisodes);
+ const exportButton=document.createElement('button');exportButton.className='export-button';exportButton.textContent='Export full report CSV';exportButton.title='Includes protocol, controller summaries, paired intervals, per-seed deltas, and full episode records.';exportButton.addEventListener('click',exportEpisodes);
  toolbar.append(quality,exportButton);target.append(toolbar);
  const bars=document.createElement('div');bars.className='comparison-bars';
  for(const [label,key] of [['Mean served wait','average_wait_seconds'],['Mean queue length','average_queue_length'],['Mean vehicles served','vehicles_served']]){
@@ -160,9 +160,22 @@ function renderReport(report){
  const note=document.createElement('p');note.className='compare-note';note.textContent=`Matched seeds: ${report.protocol.paired_seeds.join(', ')} · ${report.protocol.steps_per_episode} steps each · ${report.protocol.training_data_excluded?'training data excluded':''}. ${report.protocol.wait_definition}.`;target.append(note)
 }
 function exportEpisodes(){
- if(!latestReport)return;const rows=latestReport.episodes;const columns=Object.keys(rows[0]||{});const escape=value=>`"${String(value??'').replaceAll('"','""')}"`;
- const csv=[columns.map(escape).join(','),...rows.map(row=>columns.map(key=>escape(row[key])).join(','))].join('\n');
- const url=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));const link=document.createElement('a');link.href=url;link.download='smart-traffic-evaluation.csv';link.click();URL.revokeObjectURL(url)
+ if(!latestReport)return;
+ const columns=['record_type','scenario','seed','controller','metric','mean','median','population_stddev','ci95_low','ci95_high','sample_count','improvements','ties','value','details_json'];
+ const rows=[];const add=(type,data={})=>rows.push({record_type:type,...data});
+ add('protocol',{metric:'csv_record_types',value:'protocol; controller_summary; paired_summary_pooled; paired_summary_scenario; paired_delta; episode'});
+ for(const [key,value] of Object.entries(latestReport.protocol||{}))add('protocol',{metric:key,value:Array.isArray(value)||typeof value==='object'?JSON.stringify(value):value});
+ for(const [controller,metrics] of Object.entries(latestReport.summary||{}))for(const [metric,stats] of Object.entries(metrics)){
+  if(metric==='sample_count')continue;add('controller_summary',{controller,metric,mean:stats.mean,median:stats.median,population_stddev:stats.population_stddev,sample_count:metrics.sample_count});
+ }
+ const addPaired=(recordType,groups)=>{for(const [group,controllers] of Object.entries(groups||{}))for(const [controller,metrics] of Object.entries(controllers))for(const [metric,stats] of Object.entries(metrics))if(typeof stats==='object'&&stats!==null)add(recordType,{scenario:group||undefined,controller,metric,mean:stats.mean,ci95_low:stats.ci95_low,ci95_high:stats.ci95_high,sample_count:metrics.sample_count,improvements:metric==='wait_seconds'?metrics.wait_improvements:undefined,ties:metric==='wait_seconds'?metrics.wait_ties:undefined})};
+ addPaired('paired_summary_pooled',{'':latestReport.paired_summary_vs_fixed_time});
+ addPaired('paired_summary_scenario',latestReport.paired_summary_by_scenario);
+ for(const delta of latestReport.paired_deltas_vs_fixed_time||[])for(const metric of ['wait_seconds','queue_length','vehicles_served'])add('paired_delta',{scenario:delta.scenario,seed:delta.seed,controller:delta.controller,metric,value:delta[metric]});
+ for(const episode of latestReport.episodes||[])add('episode',{scenario:episode.scenario,seed:episode.seed,controller:episode.controller,details_json:JSON.stringify(episode)});
+ const escape=value=>`"${String(value??'').replaceAll('"','""')}"`;
+ const csv=[columns.map(escape).join(','),...rows.map(row=>columns.map(key=>escape(row[key])).join(','))].join('\r\n');
+ const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='smart-traffic-evaluation-report.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)
 }
 document.querySelectorAll('.nav-item').forEach(button=>button.addEventListener('click',()=>{
  document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x===button));

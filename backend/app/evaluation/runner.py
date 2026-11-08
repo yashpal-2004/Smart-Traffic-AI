@@ -152,6 +152,8 @@ def evaluate(scenarios: list[Scenario], seeds: list[int], steps: int, config: Si
                           "scenarios": [s.name for s in scenarios],
                           "wait_definition": "mean queueing seconds among vehicles served during the episode",
                           "queue_definition": "mean queued vehicles observed after each simulation step",
+                          "paired_interval_method": "Two-sided 95% Student t interval on paired differences; t critical values for up to 30 observations, z=1.96 approximation above 30; unavailable with one observation",
+                          "paired_interval_assumptions": "Paired differences are independent and their mean is approximately normal; pooled interval combines selected scenarios",
                           "training_data_excluded": True,
                           "duration_actions_seconds": list(DURATIONS) if duration_agent is not None else None},
             "summary": summarize(results),

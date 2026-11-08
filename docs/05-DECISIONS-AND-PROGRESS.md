@@ -136,3 +136,12 @@
 - Verification: a live 2-seed, 3-scenario evaluation rendered all three scenario groups, six policy cards, and 12 per-seed delta rows. The two-seed t intervals are visibly wide, as expected.
 - Known limitation: scenario-level intervals can be unstable at low seed counts; the pooled interval still combines scenarios and is shown separately.
 - Next exact step: export the paired summaries and interval method with the episode CSV, and add a clearer experiment protocol section.
+
+
+### 2026-11-08 — Full evaluation report CSV
+- Status: implemented; UI action verified.
+- Changed: CSV export now uses typed record rows for protocol/method, controller summaries, pooled and scenario-specific paired intervals, individual paired deltas, and complete episode JSON. Export button now describes the full report.
+- Format: one consistent column schema across record types; each row identifies its type and relevant scenario, seed, controller, and metric. Blob URL cleanup is delayed briefly to allow the browser to start the download.
+- Verification: live single-seed evaluation showed the correct unavailable-interval message and scenario cards; clicked the full-report export action.
+- Known limitation: browser download storage was not exposed for direct file inspection; episode details are embedded as JSON in a CSV cell.
+- Next exact step: verify downloaded file has every record type and valid CSV escaping, then add a JSON download option for direct machine ingestion.
