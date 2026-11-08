@@ -208,9 +208,13 @@ async function loadTrafficHistory(){
  try{
   const data=await request('/traffic/history'),select=$('forecast-site'),selected=select.value;
   $('history-observation-count').textContent=`${data.total_observations.toLocaleString()} observations · ${data.site_count} sites`;
-  select.replaceChildren();const prompt=document.createElement('option');prompt.value='';prompt.textContent=data.sites.length?'Select a signal site':'Capture a snapshot to discover sites';select.append(prompt);
-  for(const site of data.sites){const option=document.createElement('option');option.value=site.site_id;option.textContent=`Site ${site.site_id} · ${site.observations} samples`;select.append(option)}
-  if(data.sites.some(site=>site.site_id===selected))select.value=selected;
+  const ready=data.sites.filter(site=>site.observations>=24).sort((a,b)=>a.site_id.localeCompare(b.site_id));
+  const collecting=data.sites.filter(site=>site.observations<24).sort((a,b)=>b.observations-a.observations||a.site_id.localeCompare(b.site_id));
+  select.replaceChildren();const prompt=document.createElement('option');prompt.value='';prompt.textContent=data.sites.length?'Choose a signal site':'Capture a snapshot to discover sites';select.append(prompt);
+  const addGroup=(label,sites,isReady)=>{if(!sites.length)return;const group=document.createElement('optgroup');group.label=label;for(const site of sites){const option=document.createElement('option');option.value=site.site_id;const count=Number(site.observations);option.textContent=isReady?`Site ${site.site_id} · Forecast ready (${count})`:`Site ${site.site_id} · ${count}/24 · ${24-count} more needed`;group.append(option)}select.append(group)};
+  addGroup('Ready to forecast',ready,true);addGroup('Collect more data',collecting,false);
+  const previouslySelected=data.sites.find(site=>site.site_id===selected);
+  if(previouslySelected&&previouslySelected.observations>=24)select.value=selected;else if(ready.length)select.value=ready[0].site_id;else if(previouslySelected)select.value=selected;
  }catch(error){$('history-status').textContent=`Local history is unavailable: ${error.message}`}
 }
 async function captureTrafficSnapshot(){
