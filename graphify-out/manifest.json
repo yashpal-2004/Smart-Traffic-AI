@@ -36,9 +36,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1794122998.8257287,
-    "seen": 1794123043.2644281,
-    "ast_hash": "53325db47a25a90c32c82dc77cc9a91b",
+    "mtime": 1794125002.0726273,
+    "seen": 1794125003.109766,
+    "ast_hash": "eb37c1c7a749e2885740d8f823e71fd9",
     "semantic_hash": ""
   },
   "backend/README.md": {
@@ -156,9 +156,9 @@
     "semantic_hash": ""
   },
   "frontend/index.html": {
-    "mtime": 1794123781.7196684,
-    "seen": 1794123807.265573,
-    "ast_hash": "3ff4a934d9d9c61c927646812a9193d5",
+    "mtime": 1794124514.0891745,
+    "seen": 1794125003.109782,
+    "ast_hash": "ce2500d53cbe93a0e3947aa5e6c24690",
     "semantic_hash": ""
   },
   "frontend/README.md": {
@@ -186,9 +186,9 @@
     "semantic_hash": ""
   },
   "docs/images/signal-lab-compare.png": {
-    "mtime": 1794119149.0092103,
-    "seen": 1794119291.934442,
-    "ast_hash": "fee1cd37c9441d5ca1fd8bc616fcf868",
+    "mtime": 1794124989.259941,
+    "seen": 1794125003.109785,
+    "ast_hash": "9be8f17e9521104b06ed2782a98d4829",
     "semantic_hash": ""
   },
   "backend/app/traffic_feed.py": {
