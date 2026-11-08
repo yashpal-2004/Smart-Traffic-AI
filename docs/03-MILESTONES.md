@@ -24,7 +24,7 @@ Status key: `NOT STARTED`, `IN PROGRESS`, `BLOCKED`, `DONE`.
 - [x] Reserve held-out seeds; reward tuning remains future work.
 **Acceptance:** results exportable; no cherry-picked single-run claims; README includes limitations and actual measured results.
 
-## M4 — Backend API (IN PROGRESS)
+## M4 — Backend API (DONE)
 - [x] Create run/step/control/evaluation endpoints and schema validation.
 - [x] Add clear error responses and in-memory run state.
 **Acceptance:** API can drive a complete deterministic run and return metrics; API docs reflect actual behavior.

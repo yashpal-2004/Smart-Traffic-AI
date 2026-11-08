@@ -53,6 +53,7 @@ function showSnapshot(data) {
   $('run-state').innerHTML = `<i></i> ${data.paused ? 'PAUSED' : 'RUNNING'}`;
   $('run-button').innerHTML = data.paused ? '<span class="play-icon">▶</span> Resume simulation' : '<span>Ⅱ</span> Pause simulation';
   $('served-progress').style.width = `${Math.min(100, data.served / 3)}%`;
+  drawHistory(data.history || []);
 }
 function phaseName(phase) { return phase === 'north_south' ? 'North ↔ South' : 'East ↔ West'; }
 function drawCars(direction, count) {
@@ -68,6 +69,18 @@ function drawCars(direction, count) {
     const [x,y,w,h]=positions[direction](i); const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
     rect.setAttribute('x',x);rect.setAttribute('y',y);rect.setAttribute('width',w);rect.setAttribute('height',h);rect.setAttribute('rx','4');rect.setAttribute('class','car');rect.setAttribute('fill',colors[i%colors.length]);group.append(rect);
   }
+}
+function drawHistory(history) {
+  const svg = $('history-chart'); svg.replaceChildren();
+  const ns='http://www.w3.org/2000/svg', width=800, height=160, left=35, top=12, plotW=750, plotH=118;
+  const line=(x1,y1,x2,y2,cls)=>{const el=document.createElementNS(ns,'line');Object.entries({x1,y1,x2,y2,class:cls}).forEach(([k,v])=>el.setAttribute(k,v));svg.append(el)};
+  [0,.5,1].forEach(t=>line(left,top+t*plotH,left+plotW,top+t*plotH,'grid-line'));
+  if(history.length<2){const label=document.createElementNS(ns,'text');label.setAttribute('x','400');label.setAttribute('y','88');label.setAttribute('text-anchor','middle');label.textContent='Step the simulation to see history';svg.append(label);return}
+  const maxQ=Math.max(5,...history.map(x=>x.queue)), maxW=Math.max(5,...history.map(x=>x.wait));
+  const pts=history.map((x,i)=>[left+i/(history.length-1)*plotW,top+plotH-(x.queue/maxQ)*plotH]);
+  const waitPts=history.map((x,i)=>[left+i/(history.length-1)*plotW,top+plotH-(x.wait/maxW)*plotH]);
+  const path=(points,cls,area=false)=>{const el=document.createElementNS(ns,'path');const d=points.map((p,i)=>`${i?'L':'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')+(area?` L${points.at(-1)[0]},${top+plotH} L${points[0][0]},${top+plotH} Z`:'');el.setAttribute('d',d);el.setAttribute('class',cls);svg.append(el)};
+  path(pts,'queue-area',true);path(pts,'queue-line');path(waitPts,'wait-line');
 }
 async function createRun() {
   stopTimer();
@@ -96,6 +109,11 @@ $('compare-button').addEventListener('click',async()=>{
   const selected=[...$('compare-scenarios').selectedOptions].map(o=>o.value);
   $('compare-button').disabled=true;$('compare-button').textContent='Evaluating…';
   try{const report=await request('/evaluations',{method:'POST',body:JSON.stringify({scenarios:selected,seeds:[101,202,303],steps:Number($('compare-steps').value)})});renderReport(report)}catch(e){toast(e.message)}finally{$('compare-button').disabled=false;$('compare-button').textContent='Run evaluation'}
+});
+$('train-button').addEventListener('click',async()=>{
+  const button=$('train-button');button.disabled=true;button.textContent='Training…';
+  try{const result=await request('/training',{method:'POST',body:JSON.stringify({episodes:500,steps:500})});toast(`Training complete · ${result.states} states learned`);await createRun()}
+  catch(e){toast(e.message)}finally{button.disabled=false;button.textContent='Train Q-learning'}
 });
 function renderReport(report){
  const target=$('compare-results');target.replaceChildren();const grid=document.createElement('div');grid.className='results-grid';

@@ -49,3 +49,11 @@
 - Local run: `pip install -r backend/requirements.txt && PYTHONPATH=backend uvicorn app.main:app --app-dir backend --reload`; separate terminal `python3 -m http.server 4173 --bind 127.0.0.1 --directory frontend`.
 - Known limitations: Q-learning control is not competitive yet; UI comparison uses an untrained in-memory table unless a checkpoint path is later wired; runs are process-local; UI uses inline SVG and basic summaries rather than time-series charts.
 - Next exact step: investigate Q-learning reward/state/action behavior and load trained checkpoint for comparison; then add chart history and finish M3/M5 acceptance review.
+
+
+### 2026-11-08 — Trainable model and live history
+- Status: implemented and ready for continued evaluation.
+- Changed: added an on-demand training API that saves a versioned Q-table locally; simulation runs and matched evaluations now use the loaded trained model; run snapshots include bounded queue/wait/served history; dashboard includes a queue/wait SVG history chart and Train Q-learning control.
+- Verification: 16 backend tests pass, including run history and a short training request; dashboard reload confirmed API online and Compare page shows training control.
+- Known limitations: UI training currently runs synchronously and can take a while at default 500 × 500; trained model persists on local disk only; current tabular policy quality still requires serious evaluation.
+- Next exact step: benchmark trained policy with longer fixed-seed training and held-out seeds, add training progress feedback or background job if needed, and improve chart axis/legend semantics.

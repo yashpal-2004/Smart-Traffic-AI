@@ -33,6 +33,17 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['summary']['fixed_time']['sample_count'], 1)
 
+    def test_run_history_and_training_route(self):
+        created = self.client.post('/api/runs', json={}).json()
+        run_id = created['id']
+        stepped = self.client.post(f'/api/runs/{run_id}/step', json={'steps': 4}).json()
+        self.assertEqual(len(stepped['history']), 4)
+        self.assertEqual(stepped['history'][-1]['time'], 4)
+        result = self.client.post('/api/training', json={'episodes': 1, 'steps': 50})
+        self.assertEqual(result.status_code, 200)
+        self.assertTrue(result.json()['trained'])
+        self.assertGreater(result.json()['states'], 0)
+
 
 if __name__ == '__main__':
     unittest.main()

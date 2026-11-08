@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "docs/03-MILESTONES.md": {
-    "mtime": 1794116452.17029,
-    "seen": 1794116454.0595148,
-    "ast_hash": "458aa4a7d830b2d68b23f256db624d07",
+    "mtime": 1794116718.2993152,
+    "seen": 1794116719.750771,
+    "ast_hash": "a54164eb1a687957a83fd9d0464ad97b",
     "semantic_hash": ""
   },
   "docs/04-AGENT-HANDOFF.md": {
@@ -78,9 +78,9 @@
     "semantic_hash": ""
   },
   "docs/05-DECISIONS-AND-PROGRESS.md": {
-    "mtime": 1794116452.1714702,
-    "seen": 1794116454.0595179,
-    "ast_hash": "9aae9e1902db00d1234a56dd34c1a2ce",
+    "mtime": 1794116718.298611,
+    "seen": 1794116719.750774,
+    "ast_hash": "4420745bb9e037ac89bfda5c07f830a8",
     "semantic_hash": ""
   },
   "backend/app/agents/q_learning.py": {
@@ -102,8 +102,8 @@
     "semantic_hash": ""
   },
   "backend/app/evaluation/runner.py": {
-    "mtime": 1794115435.015587,
-    "seen": 1794115460.326464,
+    "mtime": 1794116656.8095202,
+    "seen": 1794116719.7507489,
     "ast_hash": "51ab8ffa1ea2541f228f0c13232c81e3",
     "semantic_hash": ""
   },
@@ -126,9 +126,9 @@
     "semantic_hash": ""
   },
   "backend/app/api/routes.py": {
-    "mtime": 1794116414.674122,
-    "seen": 1794116454.05949,
-    "ast_hash": "0ef9a4edf2c1d3e94f0cfbeec605faff",
+    "mtime": 1794116656.801862,
+    "seen": 1794116719.750746,
+    "ast_hash": "4c51f947f83fe22fbf598d1d1f63a59a",
     "semantic_hash": ""
   },
   "backend/app/main.py": {
@@ -138,15 +138,15 @@
     "semantic_hash": ""
   },
   "backend/tests/test_api.py": {
-    "mtime": 1794116170.0459816,
-    "seen": 1794116381.986621,
-    "ast_hash": "6287e08ea146c03029fca467f7e2f3be",
+    "mtime": 1794116694.3775249,
+    "seen": 1794116719.750756,
+    "ast_hash": "29d7825e71f5f582e68b774d84591d55",
     "semantic_hash": ""
   },
   "frontend/app.js": {
-    "mtime": 1794116373.297242,
-    "seen": 1794116381.9866261,
-    "ast_hash": "6f7707129cd90841ab7acc9171e4b1a7",
+    "mtime": 1794116686.2852535,
+    "seen": 1794116719.750762,
+    "ast_hash": "16f4e997349a7e008b7751c191de87bb",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -156,9 +156,9 @@
     "semantic_hash": ""
   },
   "frontend/index.html": {
-    "mtime": 1794116243.7827919,
-    "seen": 1794116381.98664,
-    "ast_hash": "3003b38924f5610da387c9a6f821cd73",
+    "mtime": 1794116686.248817,
+    "seen": 1794116719.750776,
+    "ast_hash": "926536788bae3e7c69c9223f2adf7b60",
     "semantic_hash": ""
   },
   "frontend/README.md": {

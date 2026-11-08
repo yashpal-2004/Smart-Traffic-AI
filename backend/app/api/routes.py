@@ -3,13 +3,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from uuid import uuid4
+from pathlib import Path
 
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from app.agents.fixed_time import FixedTimeController
-from app.agents.q_learning import QLearningAgent
+from app.agents.q_learning import QLearningAgent, train_episode
 from app.evaluation.runner import evaluate
 from app.simulator.environment import SCENARIOS, SignalConfig, TrafficEnvironment
 
@@ -31,16 +32,25 @@ class EvaluationRequest(BaseModel):
     steps: int = Field(default=500, ge=1, le=10000)
 
 
+class TrainRequest(BaseModel):
+    episodes: int = Field(default=300, ge=1, le=5000)
+    steps: int = Field(default=500, ge=50, le=5000)
+
+
 @dataclass
 class Run:
     env: TrafficEnvironment
     controller: str
     fixed: FixedTimeController
     agent: QLearningAgent
+    history: list[dict]
     paused: bool = True
 
 
 runs: dict[str, Run] = {}
+MODEL_PATH = Path(__file__).resolve().parents[2] / "artifacts" / "q_table.json"
+trained_agent = QLearningAgent.load(MODEL_PATH) if MODEL_PATH.exists() else QLearningAgent(epsilon=0)
+model_trained = MODEL_PATH.exists()
 router = APIRouter(prefix="/api")
 
 
@@ -59,6 +69,8 @@ def serialize_snapshot(run: Run) -> dict:
         "max_queue": snap.max_total_queue,
         "paused": run.paused,
         "controller": run.controller,
+        "history": run.history[-500:],
+        "model_trained": model_trained,
     }
 
 
@@ -83,7 +95,7 @@ def create_run(request: CreateRunRequest):
     green = min(request.green_seconds, config.max_green)
     run_id = str(uuid4())
     run = Run(TrafficEnvironment(SCENARIOS[request.scenario], request.seed, config),
-              request.controller, FixedTimeController(green, config), QLearningAgent(epsilon=0))
+              request.controller, FixedTimeController(green, config), trained_agent, [])
     runs[run_id] = run
     return {"id": run_id, **serialize_snapshot(run)}
 
@@ -109,6 +121,9 @@ def step_run(run_id: str, request: StepRequest):
             if action == 1:
                 run.env.request_switch()
             run.env.step()
+        snap = run.env.snapshot()
+        run.history.append({"time": snap.time, "queue": sum(snap.queues.values()),
+                            "wait": snap.average_wait_seconds, "served": snap.served})
     return serialize_snapshot(run)
 
 
@@ -123,6 +138,7 @@ def control_run(run_id: str, action: str):
         run.paused = False
     elif action == "reset":
         run.env.reset()
+        run.history.clear()
         run.paused = True
     else:
         raise HTTPException(404, "action must be pause, resume, or reset")
@@ -135,7 +151,32 @@ def run_evaluation(request: EvaluationRequest):
     if unknown:
         raise HTTPException(422, f"unknown scenarios: {', '.join(sorted(unknown))}")
     return evaluate([SCENARIOS[name] for name in request.scenarios], request.seeds,
-                    request.steps, SignalConfig(), QLearningAgent(epsilon=0))
+                    request.steps, SignalConfig(), trained_agent)
+
+
+@router.get("/model")
+def model_status():
+    return {"trained": model_trained, "states": len(trained_agent.q_values)}
+
+
+@router.post("/training")
+def train_model(request: TrainRequest):
+    global trained_agent, model_trained
+    agent = QLearningAgent()
+    from random import Random
+    rng = Random(2026)
+    scenarios = list(SCENARIOS.values())
+    rewards = []
+    for _ in range(request.episodes):
+        scenario = scenarios[rng.randrange(len(scenarios))]
+        env_seed = rng.randrange(1_000_000)
+        agent._rng.seed(rng.randrange(1_000_000))
+        metrics = train_episode(TrafficEnvironment(scenario, env_seed), agent, request.steps)
+        rewards.append(metrics["reward"])
+    agent.save(MODEL_PATH)
+    trained_agent, model_trained = agent, True
+    return {"trained": True, "episodes": request.episodes, "steps_per_episode": request.steps,
+            "states": len(agent.q_values), "mean_reward_last_20": sum(rewards[-20:]) / min(20, len(rewards))}
 
 
 app = FastAPI(title="Smart Traffic AI", version="0.1.0",
