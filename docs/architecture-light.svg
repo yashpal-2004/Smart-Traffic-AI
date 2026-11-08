@@ -2,11 +2,11 @@
   <title id="title">Smart Traffic AI architecture</title>
   <desc id="desc">A static browser client calls a FastAPI service. The service routes requests to a deterministic simulator, three signal controllers, a matched-seed evaluation runner, and local Q-table checkpoints. Reports return to the browser for display and download as JSON or CSV.</desc>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0c141d"/><stop offset="1" stop-color="#172431"/></linearGradient>
-    <linearGradient id="teal" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#42c6a7"/><stop offset="1" stop-color="#79e2c4"/></linearGradient>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#67d7b8"/></marker>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#EDE4D2"/><stop offset="1" stop-color="#F5ECDD"/></linearGradient>
+    <linearGradient id="teal" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#315F85"/><stop offset="1" stop-color="#648BA8"/></linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#315F85"/></marker>
     <style>
-      .title{font:700 27px system-ui,sans-serif;fill:#eef5f7}.sub{font:13px system-ui,sans-serif;fill:#9caeb9}.label{font:700 13px system-ui,sans-serif;fill:#e9f1f4}.body{font:12px system-ui,sans-serif;fill:#a9b8c1}.small{font:10px ui-monospace,monospace;fill:#77908f}.box{fill:#14212b;stroke:#324753;stroke-width:1.2}.client{fill:#122a2b;stroke:#3e8e7b}.core{fill:#14232c;stroke:#3d6970}.persist{fill:#22232a;stroke:#77734e}.arrow{fill:none;stroke:#67d7b8;stroke-width:2;marker-end:url(#arrow)}.dashed{stroke-dasharray:6 5}.tag{fill:#1e3b39;stroke:#376c5d}.tagText{font:10px ui-monospace,monospace;fill:#7de0c1}
+      .title{font:700 27px system-ui,sans-serif;fill:#39352F}.sub{font:13px system-ui,sans-serif;fill:#82796A}.label{font:700 13px system-ui,sans-serif;fill:#39352F}.body{font:12px system-ui,sans-serif;fill:#71695D}.small{font:10px ui-monospace,monospace;fill:#82796A}.box{fill:#F8F2E7;stroke:#D8CEBB;stroke-width:1.2}.client{fill:#EAF1F5;stroke:#A9C4D7}.core{fill:#F5ECDD;stroke:#C8B99F}.persist{fill:#F5ECDD;stroke:#C8B99F}.arrow{fill:none;stroke:#315F85;stroke-width:2;marker-end:url(#arrow)}.dashed{stroke-dasharray:6 5}.tag{fill:#E2EAF0;stroke:#A9C4D7}.tagText{font:10px ui-monospace,monospace;fill:#315F85}
     </style>
   </defs>
   <rect width="1280" height="720" rx="18" fill="url(#bg)"/>
@@ -17,10 +17,10 @@
   <text x="72" y="178" class="small">BROWSER · :4173</text>
   <text x="72" y="207" class="label">Signal Lab UI</text>
   <text x="72" y="235" class="body">Simulate</text><text x="72" y="258" class="body">Compare</text><text x="72" y="281" class="body">Learn</text>
-  <line x1="72" y1="304" x2="308" y2="304" stroke="#2a464b"/>
+  <line x1="72" y1="304" x2="308" y2="304" stroke="#E5DCCB"/>
   <text x="72" y="332" class="label">Evaluation views</text>
   <text x="72" y="358" class="body">Controller aggregates</text><text x="72" y="381" class="body">Paired deltas + intervals</text><text x="72" y="404" class="body">Scenario-level summaries</text>
-  <line x1="72" y1="428" x2="308" y2="428" stroke="#2a464b"/>
+  <line x1="72" y1="428" x2="308" y2="428" stroke="#E5DCCB"/>
   <text x="72" y="456" class="label">Client-side report files</text>
   <rect x="72" y="476" width="95" height="29" rx="7" class="tag"/><text x="96" y="495" class="tagText">JSON</text>
   <rect x="178" y="476" width="95" height="29" rx="7" class="tag"/><text x="205" y="495" class="tagText">CSV</text>
@@ -38,10 +38,10 @@
   <text x="794" y="178" class="small">DOMAIN · PYTHON</text>
   <text x="794" y="207" class="label">Traffic simulator</text>
   <text x="794" y="234" class="body">Seeded arrivals</text><text x="794" y="257" class="body">Four queues · two phases</text><text x="794" y="280" class="body">Amber transition · metrics</text>
-  <line x1="794" y1="304" x2="1006" y2="304" stroke="#31464b"/>
+  <line x1="794" y1="304" x2="1006" y2="304" stroke="#E5DCCB"/>
   <text x="794" y="333" class="label">Controllers</text>
   <text x="794" y="360" class="body">Fixed-time baseline</text><text x="794" y="383" class="body">Hold/switch Q-learning</text><text x="794" y="406" class="body">Green-duration Q-learning</text>
-  <line x1="794" y1="430" x2="1006" y2="430" stroke="#31464b"/>
+  <line x1="794" y1="430" x2="1006" y2="430" stroke="#E5DCCB"/>
   <text x="794" y="459" class="label">Evaluation runner</text><text x="794" y="486" class="body">Episode results + paired report</text>
   <text x="794" y="548" class="small">One lane per approach · toy model</text>
 

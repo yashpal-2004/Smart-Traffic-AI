@@ -74,7 +74,7 @@ Metric definitions: served wait is average queueing time for vehicles served dur
 
 ## Architecture
 
-![Signal Lab component architecture](docs/architecture.svg)
+![Signal Lab component architecture](docs/architecture-light.svg)
 
 The simulator and policies are independent of the web layer. The browser sends JSON to FastAPI; the API runs the same deterministic simulator for live runs and matched-seed evaluation. See [the architecture notes](docs/02-TECHNICAL-ARCHITECTURE.md) for endpoint and persistence details.
 

@@ -36,9 +36,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1794125219.8233302,
-    "seen": 1794125220.608629,
-    "ast_hash": "620497647363a4830f0fc2c33d914e0f",
+    "mtime": 1794125285.842807,
+    "seen": 1794125286.634788,
+    "ast_hash": "c35613cfa400395a1f5ce435479a5279",
     "semantic_hash": ""
   },
   "backend/README.md": {
@@ -179,12 +179,6 @@
     "ast_hash": "7c9ce2a3c4a5e1110add1742346fd193",
     "semantic_hash": ""
   },
-  "docs/architecture.svg": {
-    "mtime": 1794118897.409407,
-    "seen": 1794119291.93444,
-    "ast_hash": "081534cf9ea6144bd5bd4e30204b5dfb",
-    "semantic_hash": ""
-  },
   "backend/app/traffic_feed.py": {
     "mtime": 1794120793.2940018,
     "seen": 1794120932.9838321,
@@ -225,6 +219,12 @@
     "mtime": 1794125219.780095,
     "seen": 1794125220.6086469,
     "ast_hash": "03e8e531ad5744db201a0e774e5d63ba",
+    "semantic_hash": ""
+  },
+  "docs/architecture-light.svg": {
+    "mtime": 1794125285.841765,
+    "seen": 1794125286.634811,
+    "ast_hash": "8f6da23aa96b963da473e21463668d7d",
     "semantic_hash": ""
   }
 }
