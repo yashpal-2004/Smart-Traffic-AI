@@ -46,7 +46,7 @@ On a clean clone, both Q-learning policies start untrained. Open **Compare**, ch
 
 ## Measured controller comparison
 
-Controlled run recorded in the progress log: both tabular learners trained for 1,500 episodes × 500 steps, then evaluated on 15 held-out episodes (five seeds across three scenarios).
+In a controlled run, both tabular learners were trained for 1,500 episodes × 500 steps and evaluated on 15 held-out episodes (five seeds across three scenarios).
 
 | Controller | Mean served wait (s) | Mean queue length | Mean served vehicles |
 |---|---:|---:|---:|
@@ -87,7 +87,7 @@ backend/app/evaluation/      matched-seed runner and report summaries
 backend/app/api/             FastAPI endpoints and in-memory run manager
 backend/tests/               simulator, agent, evaluation, and API checks
 frontend/                    static Signal Lab UI
-docs/                         project, architecture, milestone, and experiment docs
+docs/                         product, architecture, and experiment docs
 ```
 
 ## Limitations
@@ -103,6 +103,3 @@ docs/                         project, architecture, milestone, and experiment d
 - [Project brief](docs/00-PROJECT-BRIEF.md)
 - [Product and UI guide](docs/01-PRODUCT-AND-UI.md)
 - [Technical architecture](docs/02-TECHNICAL-ARCHITECTURE.md)
-- [Milestones](docs/03-MILESTONES.md)
-- [Agent handoff](docs/04-AGENT-HANDOFF.md)
-- [Decisions and progress log](docs/05-DECISIONS-AND-PROGRESS.md)
