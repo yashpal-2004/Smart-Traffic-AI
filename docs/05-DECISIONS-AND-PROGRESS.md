@@ -30,3 +30,12 @@
 - Verification: `PYTHONPATH=backend python3 -m unittest discover -s backend/tests -v` — 9 tests passed; fixed-seed training and checkpoint round trip verified. `graphify update .` completed.
 - Known limitations: tabular state is intentionally small and can generalize poorly; evaluation runner and learned-vs-baseline results are still needed.
 - Next exact step: add reproducible episode evaluation and report fixed-time vs trained Q-learning on matched seeds and all three demand scenarios (M3).
+
+
+### 2026-11-08 — M3 evaluation runner implemented
+- Status: evaluation pipeline implemented; performance interpretation and tuning remain in progress.
+- Changed: added paired-seed scenario evaluation, mean/median/population spread summaries, JSON report output, and a train/evaluate CLI script with separate training and held-out evaluation seeds.
+- Verification: all 11 tests passed. End-to-end command `PYTHONPATH=backend python3 backend/scripts/train_and_evaluate.py --episodes 100 --steps 200 --output /tmp/traffic-evaluation.json` completed.
+- Observed result for this smoke experiment only: across 3 scenarios × 5 held-out seeds (15 episodes/controller), fixed-time mean served wait was 22.58s, mean queue 44.74 and mean served 248.5; Q-learning was 24.75s, 54.66 and 225.3. This trained policy did worse; do not claim improvement.
+- Known limitations: 100 episodes × 200 steps is a smoke run, not robust model selection; demand rates may exceed the single-lane service capacity, making queues grow.
+- Next exact step: inspect reward and demand/service design, then run longer training and report whether policy improves against fixed-time before building the API/UI.

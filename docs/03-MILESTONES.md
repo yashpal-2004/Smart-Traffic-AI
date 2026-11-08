@@ -18,10 +18,10 @@ Status key: `NOT STARTED`, `IN PROGRESS`, `BLOCKED`, `DONE`.
 - [x] Log episode reward and core metrics.
 **Acceptance:** train/evaluate separation exists; agent can complete episodes without invalid actions; learning curve is reproducible for fixed seeds.
 
-## M3 — Evaluation and evidence (NOT STARTED)
-- [ ] Compare fixed-time and RL on matched seeds and at least three demand patterns.
-- [ ] Report mean, median, spread, sample count, and definitions.
-- [ ] Tune reward/phase settings only against training/validation seeds; reserve held-out seeds.
+## M3 — Evaluation and evidence (IN PROGRESS)
+- [x] Compare fixed-time and RL on matched seeds and at least three demand patterns.
+- [x] Report mean, median, spread, sample count, and definitions.
+- [x] Reserve held-out seeds; reward tuning remains future work.
 **Acceptance:** results exportable; no cherry-picked single-run claims; README includes limitations and actual measured results.
 
 ## M4 — Backend API (NOT STARTED)

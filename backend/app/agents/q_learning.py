@@ -67,9 +67,11 @@ class QLearningAgent:
         self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)
 
     def save(self, path: str | Path) -> None:
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
         data = {"version": 1, "epsilon": self.epsilon,
                 "q_values": {",".join(map(str, state)): values for state, values in self.q_values.items()}}
-        Path(path).write_text(json.dumps(data, indent=2), encoding="utf-8")
+        path.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
     @classmethod
     def load(cls, path: str | Path) -> "QLearningAgent":

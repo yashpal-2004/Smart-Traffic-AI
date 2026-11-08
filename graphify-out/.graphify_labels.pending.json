@@ -12,5 +12,9 @@
   "10": "backend/README.md",
   "11": "agents/__init__.py",
   "12": "app/__init__.py",
-  "13": "simulator/__init__.py"
+  "13": "simulator/__init__.py",
+  "14": "QLearningAgent",
+  "15": "runner.py",
+  "16": "evaluation/__init__.py",
+  "17": "Path"
 }
