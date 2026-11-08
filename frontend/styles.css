@@ -48,3 +48,4 @@ body{background:var(--bg);color:var(--text)}
 .intersection>rect:first-of-type{fill:#F5ECDD}
 .intersection>path:first-of-type{fill:#E8DECB}
 .intersection>path:nth-of-type(3){fill:#F8F2E7}
+#reset-button.button.ghost .ui-icon{width:20px;height:20px;stroke-width:2.2}
