@@ -108,10 +108,21 @@ $('step-button').addEventListener('click',()=>doStep().catch(e=>toast(e.message)
 $('reset-button').addEventListener('click',async()=>{stopTimer();try{if(!runId)await createRun();const data=await request(`/runs/${runId}/control/reset`,{method:'POST'});showSnapshot(data)}catch(e){toast(e.message)}});
 $('scenario').addEventListener('change',()=>createRun().catch(e=>toast(e.message)));
 $('controller').addEventListener('change',()=>createRun().catch(e=>toast(e.message)));
+function selectedCompareScenarios(){return [...document.querySelectorAll('.scenario-checkbox:checked')].map(option=>option.value)}
+function updateScenarioPicker(){
+ const selected=selectedCompareScenarios(),count=selected.length;
+ $('scenario-picker-count').textContent=`${count} selected`;
+ $('scenario-picker-label').textContent=count===3?'All 3 scenarios':count===0?'Choose scenarios':`${count} scenario${count===1?'':'s'} selected`;
+ document.querySelectorAll('.scenario-option').forEach(label=>label.classList.toggle('is-selected',label.querySelector('.scenario-checkbox').checked));
+}
+document.querySelectorAll('.scenario-checkbox').forEach(input=>input.addEventListener('change',updateScenarioPicker));
+$('reset-scenarios').addEventListener('click',()=>{document.querySelectorAll('.scenario-checkbox').forEach(input=>input.checked=true);updateScenarioPicker()});
+document.addEventListener('pointerdown',event=>{const picker=$('scenario-picker');if(picker.open&&!picker.contains(event.target))picker.open=false});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&$('scenario-picker').open){$('scenario-picker').open=false;$('scenario-picker-summary').focus()}});
 $('compare-button').addEventListener('click',async()=>{
-  const selected=[...$('compare-scenarios').selectedOptions].map(o=>o.value);
+  const selected=selectedCompareScenarios();
   $('compare-button').disabled=true;$('compare-button').textContent='Evaluating…';
-  try{const count=Number($('evaluation-seeds').value);if(!Number.isInteger(count)||count<1||count>30)throw new Error('Choose between 1 and 30 matched seeds');const report=await request('/evaluations',{method:'POST',body:JSON.stringify({scenarios:selected,seeds:Array.from({length:count},(_,i)=>101+i),steps:Number($('compare-steps').value)})});renderReport(report)}catch(e){toast(e.message)}finally{$('compare-button').disabled=false;$('compare-button').textContent='Run evaluation'}
+  try{if(!selected.length)throw new Error('Select at least one traffic scenario');const count=Number($('evaluation-seeds').value);if(!Number.isInteger(count)||count<1||count>30)throw new Error('Choose between 1 and 30 matched seeds');const report=await request('/evaluations',{method:'POST',body:JSON.stringify({scenarios:selected,seeds:Array.from({length:count},(_,i)=>101+i),steps:Number($('compare-steps').value)})});renderReport(report)}catch(e){toast(e.message)}finally{$('compare-button').disabled=false;$('compare-button').textContent='Run evaluation'}
 });
 $('train-button').addEventListener('click',async()=>{
   const button=$('train-button');button.disabled=true;button.textContent='Training…';
