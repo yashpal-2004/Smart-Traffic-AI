@@ -96,3 +96,10 @@
 - Controlled experiment: 1,500 episodes × 500 steps; held-out 5 seeds across 3 scenarios (15 episodes each). Fixed-time mean wait 11.10s, queue 12.80, served 544.6; hold/switch Q-learning 15.31s, 19.26, 531.1; duration Q-learning 12.34s, 14.99, 538.9. Duration policy improved over hold/switch but remains behind fixed-time.
 - Next exact step: refresh browser and confirm three-policy report, then add the duration policy to the live simulation controller options and improve reward/state tuning without claiming a win.
 - Browser verification: three-policy report is live; default quick evaluation showed duration policy at 16.11s wait and 19.35 queue, between hold/switch (17.74s, 23.16) and fixed-time (11.77s, 13.41). The quick UI evaluation uses a small locally saved model and 9 episodes; the controlled script result above is the more relevant comparison.
+
+
+### 2026-11-08 — Duration policy in live simulation
+- Status: implemented.
+- Changed: added green-duration Q-learning to the run controller choices; each green phase chooses a target duration and then switches through the configured amber period; API snapshots expose the current target; UI identifies the policy and displays its chosen target. The option returns a clear conflict response before a duration model has been trained.
+- Verification: 18 backend checks pass, including training then starting/stepping a duration-policy run. Browser check confirms controller selector entry, live step, and target display (30s in observed step).
+- Next exact step: expose duration action/reward traces in the Learn page and provide longer, selectable training settings before more controlled policy tuning.

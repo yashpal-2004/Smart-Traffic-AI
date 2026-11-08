@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 
 from app.agents.fixed_time import FixedTimeController
 from app.agents.q_learning import QLearningAgent, train_episode
-from app.agents.duration_q_learning import DurationQLearningAgent, train_duration_episode
+from app.agents.duration_q_learning import DurationQLearningAgent, DURATIONS, train_duration_episode
 from app.evaluation.runner import evaluate
 from app.simulator.environment import SCENARIOS, SignalConfig, TrafficEnvironment
 
@@ -47,6 +47,7 @@ class Run:
     fixed: FixedTimeController
     agent: QLearningAgent
     history: list[dict]
+    green_target: int | None = None
     paused: bool = True
 
 
@@ -76,6 +77,7 @@ def serialize_snapshot(run: Run) -> dict:
         "max_queue": snap.max_total_queue,
         "paused": run.paused,
         "controller": run.controller,
+        "green_target": run.green_target,
         "history": run.history[-500:],
         "model_trained": model_trained,
     }
@@ -96,13 +98,16 @@ def scenarios():
 def create_run(request: CreateRunRequest):
     if request.scenario not in SCENARIOS:
         raise HTTPException(422, f"unknown scenario: {request.scenario}")
-    if request.controller not in {"fixed_time", "q_learning"}:
-        raise HTTPException(422, "controller must be fixed_time or q_learning")
+    if request.controller not in {"fixed_time", "q_learning", "duration_q_learning"}:
+        raise HTTPException(422, "unknown controller")
+    if request.controller == "duration_q_learning" and duration_agent is None:
+        raise HTTPException(409, "train the duration Q-learning model before using it")
     config = SignalConfig(max_green=max(30, request.green_seconds))
     green = min(request.green_seconds, config.max_green)
     run_id = str(uuid4())
     run = Run(TrafficEnvironment(SCENARIOS[request.scenario], request.seed, config),
-              request.controller, FixedTimeController(green, config), trained_agent, [])
+              request.controller, FixedTimeController(green, config),
+              duration_agent if request.controller == "duration_q_learning" else trained_agent, [])
     runs[run_id] = run
     return {"id": run_id, **serialize_snapshot(run)}
 
@@ -123,6 +128,17 @@ def step_run(run_id: str, request: StepRequest):
     for _ in range(request.steps):
         if run.controller == "fixed_time":
             run.fixed.step(run.env)
+        elif run.controller == "duration_q_learning":
+            if run.env.transitioning:
+                run.env.step()
+            else:
+                if run.green_target is None:
+                    action = run.agent.act(run.env, explore=False)
+                    run.green_target = DURATIONS[action]
+                if run.env.phase_elapsed >= run.green_target:
+                    run.env.request_switch()
+                    run.green_target = None
+                run.env.step()
         else:
             action = run.agent.act(run.env)
             if action == 1:
@@ -146,6 +162,7 @@ def control_run(run_id: str, action: str):
     elif action == "reset":
         run.env.reset()
         run.history.clear()
+        run.green_target = None
         run.paused = True
     else:
         raise HTTPException(404, "action must be pause, resume, or reset")

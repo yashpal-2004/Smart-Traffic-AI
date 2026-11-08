@@ -53,6 +53,17 @@ class ApiTests(unittest.TestCase):
         self.assertGreater(status['states'], 0)
         self.assertGreater(status['duration_states'], 0)
 
+    def test_duration_policy_can_drive_live_run_after_training(self):
+        self.client.post('/api/training', json={'episodes': 1, 'steps': 50})
+        for _ in range(100):
+            status = self.client.get('/api/training').json()
+            if status['status'] in {'complete', 'failed'}: break
+            time.sleep(.01)
+        created = self.client.post('/api/runs', json={'controller':'duration_q_learning'}).json()
+        self.assertEqual(created['controller'], 'duration_q_learning')
+        stepped = self.client.post(f"/api/runs/{created['id']}/step", json={'steps': 8}).json()
+        self.assertIn(stepped['green_target'], [10, 15, 20, 25, 30])
+
 
 if __name__ == '__main__':
     unittest.main()

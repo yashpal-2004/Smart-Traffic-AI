@@ -48,8 +48,10 @@ function showSnapshot(data) {
   document.querySelector(`#signal-ew .lamp.${ns ? other : active}`).classList.add('on');
   $('phase-arrows').textContent = ns ? '↕' : '↔';
   $('decision-note').textContent = data.transitioning ? 'Amber transition · vehicles stopped' : 'Serving active approaches';
-  $('policy-name').textContent = data.controller === 'fixed_time' ? 'Fixed-time baseline' : 'Q-learning agent';
-  $('policy-desc').textContent = data.controller === 'fixed_time' ? 'Cycles between phases on a fixed schedule.' : 'Chooses to hold or switch using its learned Q-table.';
+  const names={fixed_time:'Fixed-time baseline',q_learning:'Hold/switch Q-learning',duration_q_learning:'Green-duration Q-learning'};
+  $('policy-name').textContent = names[data.controller] || data.controller;
+  $('policy-desc').textContent = data.controller === 'fixed_time' ? 'Cycles between phases on a fixed schedule.' : data.controller === 'duration_q_learning' ? 'Selects a target green duration using its learned policy.' : 'Chooses to hold or switch using its learned Q-table.';
+  if(data.controller==='duration_q_learning' && data.green_target){$('decision-note').textContent=`Chosen green target · ${data.green_target}s`}
   $('run-state').classList.toggle('running', !data.paused);
   $('run-state').innerHTML = `<i></i> ${data.paused ? 'PAUSED' : 'RUNNING'}`;
   $('run-button').innerHTML = data.paused ? '<span class="play-icon">▶</span> Resume simulation' : '<span>Ⅱ</span> Pause simulation';
