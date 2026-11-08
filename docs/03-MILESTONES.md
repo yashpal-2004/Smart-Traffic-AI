@@ -12,10 +12,10 @@ Status key: `NOT STARTED`, `IN PROGRESS`, `BLOCKED`, `DONE`.
 - [x] Define and test step ordering and edge cases.
 **Acceptance:** same seed/config produces identical trace; no vehicle disappears except when served; no conflicting phases; metrics match hand-calculated tiny scenarios.
 
-## M2 — Q-learning agent (NOT STARTED)
-- [ ] Define discrete observation encoding and legal actions.
-- [ ] Implement Q-table, epsilon-greedy policy, training loop, checkpoint format.
-- [ ] Log episode reward and core metrics.
+## M2 — Q-learning agent (IN PROGRESS)
+- [x] Define discrete observation encoding and legal actions.
+- [x] Implement Q-table, epsilon-greedy policy, training loop, checkpoint format.
+- [x] Log episode reward and core metrics.
 **Acceptance:** train/evaluate separation exists; agent can complete episodes without invalid actions; learning curve is reproducible for fixed seeds.
 
 ## M3 — Evaluation and evidence (NOT STARTED)

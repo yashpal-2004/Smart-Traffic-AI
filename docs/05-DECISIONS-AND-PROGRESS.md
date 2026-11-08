@@ -21,3 +21,12 @@
 - Verification: `PYTHONPATH=backend python3 -m unittest discover -s backend/tests -v` — 5 tests passed. `graphify update .` completed.
 - Known limitations: simplified one-lane intersection and per-second Bernoulli traffic; no UI/API yet.
 - Next exact step: implement tabular Q-learning with discrete queue/phase observations, legal hold/switch actions, training loop, and deterministic checkpointing (M2).
+
+
+### 2026-11-08 — M2 Q-learning core implemented
+- Status: Implementation complete; M2 acceptance review in progress.
+- Changed: added bounded queue/phase observation, legal hold/switch actions, tabular Q-learning, epsilon-greedy exploration, fixed-length episode trainer, metrics output, and versioned JSON checkpoint save/load.
+- Decisions: state has capped queue buckets (0–5), phase id, and green-age bucket; reward is vehicles served this tick minus 0.1 times the remaining queued vehicles; min-green prevents early switches and max-green forces a switch.
+- Verification: `PYTHONPATH=backend python3 -m unittest discover -s backend/tests -v` — 9 tests passed; fixed-seed training and checkpoint round trip verified. `graphify update .` completed.
+- Known limitations: tabular state is intentionally small and can generalize poorly; evaluation runner and learned-vs-baseline results are still needed.
+- Next exact step: add reproducible episode evaluation and report fixed-time vs trained Q-learning on matched seeds and all three demand scenarios (M3).

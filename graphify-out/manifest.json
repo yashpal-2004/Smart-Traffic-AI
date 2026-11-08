@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "docs/03-MILESTONES.md": {
-    "mtime": 1794114230.871601,
-    "seen": 1794115264.870943,
-    "ast_hash": "5b7d79399b4e5c7ee0b0c3360726a5c0",
+    "mtime": 1794115274.6053016,
+    "seen": 1794115354.549649,
+    "ast_hash": "a429e742618516098d32407c026e1947",
     "semantic_hash": ""
   },
   "docs/04-AGENT-HANDOFF.md": {
@@ -78,9 +78,21 @@
     "semantic_hash": ""
   },
   "docs/05-DECISIONS-AND-PROGRESS.md": {
-    "mtime": 1794113962.5737891,
-    "seen": 1794115264.870945,
-    "ast_hash": "4d1110ddab7307465e21b20bdef434f8",
+    "mtime": 1794115274.605909,
+    "seen": 1794115354.5496519,
+    "ast_hash": "b45cd82fdf96ed8fb03d50d1eb093116",
+    "semantic_hash": ""
+  },
+  "backend/app/agents/q_learning.py": {
+    "mtime": 1794115350.6899009,
+    "seen": 1794115354.549634,
+    "ast_hash": "0c66a2cbe75c13328218d6c19d803af5",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_q_learning.py": {
+    "mtime": 1794115338.2456214,
+    "seen": 1794115354.549639,
+    "ast_hash": "b79870e437a555ee126f3da75047f40e",
     "semantic_hash": ""
   }
 }
