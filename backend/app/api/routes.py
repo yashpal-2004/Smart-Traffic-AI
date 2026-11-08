@@ -8,6 +8,8 @@ from threading import Lock, Thread
 from random import Random
 from datetime import datetime, timezone
 from hashlib import sha256
+import os
+import subprocess
 
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -62,6 +64,25 @@ trained_agent = QLearningAgent.load(MODEL_PATH) if MODEL_PATH.exists() else QLea
 model_trained = MODEL_PATH.exists()
 duration_agent = DurationQLearningAgent.load(DURATION_MODEL_PATH) if DURATION_MODEL_PATH.exists() else None
 router = APIRouter(prefix="/api")
+
+
+def source_revision_metadata() -> dict:
+    override = os.environ.get("SMART_TRAFFIC_SOURCE_REVISION")
+    if override:
+        return {"revision": override, "revision_source": "SMART_TRAFFIC_SOURCE_REVISION",
+                "source_working_tree_clean": None}
+    repo_root = Path(__file__).resolve().parents[3]
+    try:
+        revision = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo_root,
+                                  check=True, capture_output=True, text=True, timeout=2).stdout.strip()
+        status = subprocess.run(["git", "status", "--porcelain", "--untracked-files=all", "--",
+                                 ".", ":(exclude)graphify-out"], cwd=repo_root,
+                                check=True, capture_output=True, text=True, timeout=2).stdout
+        return {"revision": revision, "revision_source": "git",
+                "source_working_tree_clean": not bool(status.strip())}
+    except (OSError, subprocess.SubprocessError):
+        return {"revision": None, "revision_source": "unavailable",
+                "source_working_tree_clean": None}
 
 
 def serialize_snapshot(run: Run) -> dict:
@@ -191,6 +212,7 @@ def run_evaluation(request: EvaluationRequest):
         "report_id": str(uuid4()),
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "endpoint": "POST /api/evaluations",
+        "source": source_revision_metadata(),
         "signal_config": {"min_green_seconds": config.min_green,
                            "max_green_seconds": config.max_green,
                            "amber_seconds": config.amber_seconds},

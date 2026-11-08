@@ -162,3 +162,19 @@
 - Verification: live evaluation metadata contained both full Q-table hashes, 79/8 state counts, the three selected scenarios and their arrival-rate maps; footer showed matching hash prefixes and 5–30s green/2s amber settings.
 - Known limitation: fingerprints identify the saved table files, not the complete training data, runtime dependencies, or source revision.
 - Next exact step: add source revision capture from the repository when the app can identify the checked-out commit reliably.
+
+
+### 2026-11-08 — Source revision in evaluation reports
+- Status: implemented; browser verification pending.
+- Changed: reports include the full Git revision and source-tree cleanliness, excluding generated graphify output. `SMART_TRAFFIC_SOURCE_REVISION` overrides Git lookup in deployments without repository metadata; unknown state is explicit if neither is available.
+- Display/export: JSON retains the structured source field, CSV emits it with the other metadata, and the report footer shows a short revision plus clean/dirty state.
+- Known limitation: source revision reflects the checked-out commit; dirty state signals that the working files may differ from that commit. The override cannot report cleanliness.
+- Next exact step: verify local revision and dirty status in a live report after commit, and confirm the environment override behavior without exposing build secrets.
+
+
+### 2026-11-08 — M6 release preparation
+- Status: in progress.
+- Changed: replaced obsolete README/setup notes with clean-clone instructions for the actual FastAPI + static frontend stack; documented endpoints, checkpoint persistence, metrics, and current measured controller results. Added an architecture SVG, clean dashboard screenshot, keyboard focus ring, and captioned/scope-labelled paired results table.
+- Milestones: M2 and M3 evidence is now recorded as complete; M5's three-page workflow, live snapshots, and responsive/accessibility implementation are complete. M6 remains open for sample exports and a clean-clone startup smoke check.
+- Review: inspected the 1080px, 800px, 700px, 520px, and 900px responsive rules; reduced-motion handling remains enabled. Browser comparison screenshot captured at the desktop viewport. Keyboard navigation tooling did not expose a direct keypress API, so focus behavior is supported by native controls and explicit `:focus-visible` styling but was not manually key-driven in this review.
+- Next exact step: produce tracked sample JSON/CSV from a clean source revision, then smoke-start the documented clean-clone setup and complete M6.

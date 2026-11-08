@@ -36,15 +36,15 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1794113962.5426784,
-    "seen": 1794115264.870938,
-    "ast_hash": "699364db9f00942be2e80a0b8c0e85ba",
+    "mtime": 1794119198.022768,
+    "seen": 1794119291.934426,
+    "ast_hash": "a54209d39dd3641719fb40cc91d35e92",
     "semantic_hash": ""
   },
   "backend/README.md": {
-    "mtime": 1794116452.065229,
-    "seen": 1794116454.059509,
-    "ast_hash": "9c1bf1e337f8979fc0c6be669ae196b2",
+    "mtime": 1794118853.355301,
+    "seen": 1794119291.9344268,
+    "ast_hash": "d0f04ba8dae988b8764c0c298e697b4e",
     "semantic_hash": ""
   },
   "docs/00-PROJECT-BRIEF.md": {
@@ -60,15 +60,15 @@
     "semantic_hash": ""
   },
   "docs/02-TECHNICAL-ARCHITECTURE.md": {
-    "mtime": 1794113962.5569944,
-    "seen": 1794115264.8709419,
-    "ast_hash": "130d1482fae358200a8a2a7f6fb09268",
+    "mtime": 1794118853.3606553,
+    "seen": 1794119291.934433,
+    "ast_hash": "dd0c04469abece1fafaab820afd8d0d9",
     "semantic_hash": ""
   },
   "docs/03-MILESTONES.md": {
-    "mtime": 1794116718.2993152,
-    "seen": 1794116719.750771,
-    "ast_hash": "a54164eb1a687957a83fd9d0464ad97b",
+    "mtime": 1794119279.3820612,
+    "seen": 1794119291.934434,
+    "ast_hash": "53f7c125b59fe21796de4fb6f5d6d72c",
     "semantic_hash": ""
   },
   "docs/04-AGENT-HANDOFF.md": {
@@ -78,9 +78,9 @@
     "semantic_hash": ""
   },
   "docs/05-DECISIONS-AND-PROGRESS.md": {
-    "mtime": 1794118543.05111,
-    "seen": 1794118544.205011,
-    "ast_hash": "e8d26857e086b565249996e5b4eddf91",
+    "mtime": 1794119290.7427733,
+    "seen": 1794119291.934436,
+    "ast_hash": "3991d12c688d05687a5fa014bee5e227",
     "semantic_hash": ""
   },
   "backend/app/agents/q_learning.py": {
@@ -126,9 +126,9 @@
     "semantic_hash": ""
   },
   "backend/app/api/routes.py": {
-    "mtime": 1794118524.4084685,
-    "seen": 1794118544.204982,
-    "ast_hash": "11eedd11cf9dc72b46acd20cfabe6b1a",
+    "mtime": 1794118664.3950777,
+    "seen": 1794118683.836096,
+    "ast_hash": "619b136dec8f3dc102bfab01c63305ff",
     "semantic_hash": ""
   },
   "backend/app/main.py": {
@@ -144,9 +144,9 @@
     "semantic_hash": ""
   },
   "frontend/app.js": {
-    "mtime": 1794118535.4156034,
-    "seen": 1794118544.204999,
-    "ast_hash": "4af9dae386e5924f5b1de66d8f7a676c",
+    "mtime": 1794119189.9850647,
+    "seen": 1794119291.9344242,
+    "ast_hash": "cdc56c53af5dd85cb3bfeffe5c0cb1e9",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -162,9 +162,9 @@
     "semantic_hash": ""
   },
   "frontend/README.md": {
-    "mtime": 1794116452.0576222,
-    "seen": 1794116454.05952,
-    "ast_hash": "d4d0febc1fc81d8f92204399456bc221",
+    "mtime": 1794118853.3578374,
+    "seen": 1794119291.934437,
+    "ast_hash": "c5fbd7da74db7aa0c88afb9ed602e875",
     "semantic_hash": ""
   },
   "backend/app/agents/duration_q_learning.py": {
@@ -177,6 +177,18 @@
     "mtime": 1794117207.1340976,
     "seen": 1794117288.0251222,
     "ast_hash": "7c9ce2a3c4a5e1110add1742346fd193",
+    "semantic_hash": ""
+  },
+  "docs/architecture.svg": {
+    "mtime": 1794118897.409407,
+    "seen": 1794119291.93444,
+    "ast_hash": "081534cf9ea6144bd5bd4e30204b5dfb",
+    "semantic_hash": ""
+  },
+  "docs/images/signal-lab-compare.png": {
+    "mtime": 1794119149.0092103,
+    "seen": 1794119291.934442,
+    "ast_hash": "fee1cd37c9441d5ca1fd8bc616fcf868",
     "semantic_hash": ""
   }
 }

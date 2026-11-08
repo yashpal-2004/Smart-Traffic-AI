@@ -1,20 +1,11 @@
 # Signal Lab frontend
 
-Static, dependency-free web UI for the Smart Traffic AI API.
+Dependency-free static HTML, CSS, and JavaScript client for the Smart Traffic AI API. No npm install or build step is needed.
 
-Run from the repository root:
+From the repository root:
 
 ```sh
 python3 -m http.server 4173 --bind 127.0.0.1 --directory frontend
 ```
 
-In a second terminal, start the API:
-
-```sh
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r backend/requirements.txt
-PYTHONPATH=backend uvicorn app.main:app --app-dir backend --reload
-```
-
-Open http://127.0.0.1:4173. The backend uses http://127.0.0.1:8000 and allows the local frontend origin. For a different frontend URL, set `window.TRAFFIC_API_URL` in `app.js` or adjust API CORS configuration.
+Start the API separately using the instructions in [`backend/README.md`](../backend/README.md), then open [http://127.0.0.1:4173](http://127.0.0.1:4173). The default API URL is `http://127.0.0.1:8000/api`. Set `window.TRAFFIC_API_URL` before `app.js` loads to point the UI at a different API; configure matching CORS origins in the backend for non-local hosting.

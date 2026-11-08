@@ -1,62 +1,47 @@
 # Technical Architecture
 
-## Proposed stack
-- Python 3.11+ core simulation and learning logic.
-- NumPy for numeric utilities; start with a small custom discrete simulator.
-- FastAPI backend to expose scenario, run, step, training, and evaluation APIs.
-- React + TypeScript + Vite frontend; SVG or Canvas for intersection visualization; a chart library selected during implementation.
-- Pydantic schemas at API boundaries; pytest for deterministic simulator and policy tests; frontend lint/build checks.
-- Docker Compose optional for one-command local startup after basic local development works.
+## Implemented stack
+
+- Python 3.10+ simulation and policy code; no numerical library dependency.
+- FastAPI + Pydantic API boundary, served locally by Uvicorn.
+- Static, dependency-free HTML/CSS/JavaScript frontend; SVG intersection drawing and Canvas/SVG history visualization.
+- `unittest` checks for simulator, policies, evaluation, and API behavior.
 
 ## Component boundaries
-`simulator/` owns world state, vehicle arrivals, phase transitions, movement, metrics, and seeded randomness. It must not depend on web/UI libraries.
 
-`agents/` owns policy interface, fixed-time policy, random policy for debugging, Q-learning table, epsilon schedule, and persistence format.
+`backend/app/simulator/` owns seeded arrivals, queues, phases, transitions, movement, and metrics. `agents/` contains fixed-time, hold/switch Q-learning, and green-duration semi-Markov Q-learning policies. `evaluation/` executes matched seeds and returns episode-level results, summaries, paired deltas, and intervals. `api/` validates inputs, manages process-local runs and training, and serializes reports. `frontend/` renders the user workflow and sends JSON requests; it does not simulate traffic itself.
 
-`evaluation/` runs policies over matched scenario/seed sets, aggregates metrics, and emits machine-readable results.
+## Runtime flow
 
-`api/` validates requests, manages in-memory runs for v1, and translates domain objects to DTOs. Keep simulation logic out of route handlers.
+1. The browser sends a run, step, training, or evaluation request to the FastAPI `/api` routes.
+2. The API validates the request and invokes the simulator/policy layer.
+3. Matched evaluation reuses each scenario/seed pair across the baseline and available learned controllers.
+4. The report includes episode rows, per-controller aggregates, paired differences, uncertainty estimates, protocol details, source revision, and hashes of available local checkpoints.
+5. JSON and typed-row CSV downloads are created in the browser. The server does not persist evaluation reports.
 
-`web/` contains pages, controls, visualization, charts, and API client. It must not reimplement traffic or reward rules.
+## State and persistence
 
-`docs/` is the durable source of truth for requirements, decisions, milestones, and agent continuity.
+Live runs and training progress are in memory and are lost on server restart. Q-table checkpoints are saved locally to ignored `backend/artifacts/q_table.json` and `duration_q_table.json` after successful training. They are not included in a clean clone. Evaluation reports are downloaded by the user and are not uploaded or stored remotely.
 
-## Suggested repo layout
-```
-backend/
-  app/main.py
-  app/api/routes/
-  app/simulator/{environment,vehicles,signals,scenarios,metrics}.py
-  app/agents/{base,fixed_time,q_learning}.py
-  app/evaluation/{runner,report}.py
-  tests/
-frontend/
-  src/{app,pages,components,features,lib,styles}/
-docs/
-```
+## Evaluation contract
 
-## Simulator contract
-- Four approaches: N, E, S, W; fixed capacity queues.
-- Discrete simulation step (initially 1 second); arrival probabilities/rates per approach.
-- Signal phase serves one non-conflicting pair (N/S or E/W); minimum green, maximum green, and amber/all-red transition are explicit.
-- A step deterministically: apply phase transition, generate arrivals from seeded RNG, move eligible vehicles, update waits/queues/throughput, calculate observation/reward, return snapshot.
-- Observation v1: bounded queue sizes per approach, current phase, and elapsed green bucket. Keep state small enough for tabular Q-learning.
-- Action v1: hold current phase or request switch, subject to minimum green and safe transition.
-- Reward v1: penalize total waiting/queue and switching overhead; reward throughput only if experiments show it does not encourage unstable switching. Document and test exact formula.
-- Baseline: fixed-time phases with the same transition rules.
+- Scenarios: balanced, rush hour, and northbound surge, each with a fixed per-approach Bernoulli arrival probability.
+- Seeds are matched across controllers within each selected scenario.
+- Wait: average queueing seconds among vehicles served during an episode.
+- Queue: mean queued vehicles observed after each simulation step.
+- Throughput: vehicles served in the episode.
+- Paired intervals: two-sided 95% t intervals for paired differences, with a normal approximation above 30 observations; unavailable for one observation. Pooled intervals combine selected scenarios; scenario-level summaries are also returned.
 
-## API sketch
-- `GET /api/scenarios` -> scenario catalog.
-- `POST /api/runs` -> create run with policy/scenario/seed/config.
-- `POST /api/runs/{id}/step` -> advance N steps and return snapshot.
-- `POST /api/runs/{id}/control` -> pause/resume/reset where applicable.
-- `GET /api/runs/{id}` -> snapshot and metrics.
-- `POST /api/evaluations` -> matched batch evaluation request.
-- `GET /api/evaluations/{id}` -> status and results.
-Use WebSocket only if polling/step responses prove inadequate; avoid premature complexity.
+## API
 
-## Data and reproducibility
-Each run stores config, seed, policy name/version, simulator version, metrics, and step trace. Evaluation creates paired runs with identical arrival seeds for each controller. Training episodes and held-out evaluation seeds remain separate. Export summary data in JSON/CSV.
+- `GET /api/health`, `GET /api/scenarios`, `GET /api/model`
+- `POST /api/runs`; `GET /api/runs/{id}`; `POST /api/runs/{id}/step`
+- `POST /api/runs/{id}/control/{pause|resume|reset}`
+- `POST /api/training`; `GET /api/training`
+- `POST /api/evaluations`
 
-## Engineering constraints
-No arbitrary repository code is executed. No external telemetry by default. Bound request sizes and run duration. Surface exceptions as actionable UI errors; log server details without leaking secrets.
+See FastAPI's generated `/docs` page while the service is running for request and response schemas.
+
+## Constraints
+
+This is an educational single-intersection model and is not for real-world signal control. It has no authentication, database, multi-user isolation, external telemetry, or production deployment configuration. For deployments without Git metadata, `SMART_TRAFFIC_SOURCE_REVISION` can supply the source identifier recorded in evaluation metadata.

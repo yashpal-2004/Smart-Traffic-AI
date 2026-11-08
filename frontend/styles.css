@@ -11,3 +11,4 @@
 .scenario-summary{margin:12px 0 0;padding-top:11px;border-top:1px solid #28343f}.scenario-summary h4{font-size:10px;color:#aebbc4;margin:0 0 8px}.scenario-summary .paired-summary-card{background:#121c25}.scenario-summary .paired-summary-card p:last-child{color:#75cfb3}
 .export-actions{display:flex;gap:7px;margin-left:auto}.export-actions .export-button{margin-left:0}
 .report-meta{margin-left:auto;color:#70808c;font:8px 'DM Mono';white-space:nowrap}@media(max-width:900px){.results-toolbar{flex-wrap:wrap;gap:8px}.report-meta{margin-left:0}.export-actions{margin-left:auto}}
+:focus-visible{outline:2px solid #8aefd1!important;outline-offset:3px;border-radius:3px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
