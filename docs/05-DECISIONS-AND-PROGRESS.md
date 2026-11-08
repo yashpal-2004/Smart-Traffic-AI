@@ -78,3 +78,12 @@
 ### 2026-11-08 — Browser check of trained comparison
 - Verification: reloaded dashboard, confirmed API online and model status at 38 states; ran default matched comparison (3 scenarios × 3 seeds, 500 steps). Fixed-time mean served wait 11.77s, mean queue 13.41, served 545.8; Q-learning 14.24s, 16.39, served 543.0.
 - Interpretation: on this small run, the trained policy still underperforms; the UI reports results without claiming a gain. Episode CSV export control is visible.
+
+
+### 2026-11-08 — Q-learning reward/state experiment
+- Status: experiment rejected; no performance improvement.
+- Changed: increased green-age resolution to five-second buckets, slowed epsilon decay, added randomized tie-breaking, and changed reward to accumulated queue delay with a small throughput term.
+- Verification: existing 16 backend checks still pass in the preceding run before this experiment; training/evaluation CLI completed at 1,500 and 5,000 episodes, 500 steps, with 15 held-out episodes per controller.
+- Results: fixed-time remained at 11.29s served wait, 12.71 mean queue, 535.4 served. Revised Q-learning at 1,500 episodes: 13.53s, 16.31, 527.9. At 5,000 episodes: 21.17s, 24.23, 512.5. More training worsened this policy.
+- Conclusion: the tabular Q-learning formulation is not useful yet. Do not use its checkpoint as evidence of an improved controller. The project needs a better action/state/reward formulation (or a clearly labelled adaptive heuristic comparator) before presenting RL effectiveness.
+- Next exact step: design a green-duration action space and measure the transition reward/credit assignment with a small controlled sweep, keeping fixed-time as the baseline.

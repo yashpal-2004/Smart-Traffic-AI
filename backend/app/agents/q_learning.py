@@ -16,7 +16,8 @@ def observe(env: TrafficEnvironment) -> State:
     """Bucket queue lengths and green age into a compact tabular state."""
     queues = tuple(min(5, len(env.queues[a])) for a in Approach)
     phase_bit = 0 if env.phase == Phase.NORTH_SOUTH else 1
-    green_age = min(3, env.phase_elapsed // max(1, env.config.min_green))
+    # Five-second buckets preserve useful timing information through max green.
+    green_age = min(5, env.phase_elapsed // 5)
     return (*queues, phase_bit, green_age)
 
 
@@ -25,8 +26,8 @@ class QLearningAgent:
     learning_rate: float = 0.15
     discount: float = 0.95
     epsilon: float = 1.0
-    epsilon_min: float = 0.0
-    epsilon_decay: float = 0.98
+    epsilon_min: float = 0.05
+    epsilon_decay: float = 0.995
     q_values: dict[State, list[float]] = field(default_factory=dict)
     _rng: random.Random = field(default_factory=lambda: random.Random(0), repr=False)
 
@@ -55,7 +56,9 @@ class QLearningAgent:
         if explore and self._rng.random() < self.epsilon:
             return self._rng.choice(actions)
         values = self._values(state)
-        return max(actions, key=lambda action: values[action])
+        best = max(values[action] for action in actions)
+        ties = [action for action in actions if values[action] == best]
+        return self._rng.choice(ties)
 
     def update(self, state: State, action: Action, reward: float, next_state: State,
                next_actions: tuple[Action, ...]) -> None:
@@ -96,7 +99,8 @@ def train_episode(env: TrafficEnvironment, agent: QLearningAgent, steps: int = 5
             action = 0
         before_served = env.metrics.total_served
         snapshot = env.step()
-        reward = float(env.metrics.total_served - before_served) - 0.1 * sum(snapshot.queues.values())
+        # Minimize accumulated delay while retaining a small throughput signal.
+        reward = -0.1 * sum(snapshot.queues.values()) + 0.25 * (env.metrics.total_served - before_served)
         next_state = observe(env)
         agent.update(state, action, reward, next_state, agent.legal_actions(env))
         total_reward += reward
