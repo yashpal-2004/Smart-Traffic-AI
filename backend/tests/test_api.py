@@ -51,6 +51,7 @@ class ApiTests(unittest.TestCase):
             time.sleep(.01)
         self.assertEqual(status['status'], 'complete')
         self.assertGreater(status['states'], 0)
+        self.assertGreater(status['duration_states'], 0)
 
 
 if __name__ == '__main__':

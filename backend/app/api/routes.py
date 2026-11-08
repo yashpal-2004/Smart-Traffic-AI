@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 
 from app.agents.fixed_time import FixedTimeController
 from app.agents.q_learning import QLearningAgent, train_episode
+from app.agents.duration_q_learning import DurationQLearningAgent, train_duration_episode
 from app.evaluation.runner import evaluate
 from app.simulator.environment import SCENARIOS, SignalConfig, TrafficEnvironment
 
@@ -53,8 +54,10 @@ runs: dict[str, Run] = {}
 training_lock = Lock()
 training_job: dict = {"status": "idle", "completed": 0, "total": 0}
 MODEL_PATH = Path(__file__).resolve().parents[2] / "artifacts" / "q_table.json"
-trained_agent = QLearningAgent.load(MODEL_PATH) if MODEL_PATH.exists() else QLearningAgent(epsilon=0)
+DURATION_MODEL_PATH = Path(__file__).resolve().parents[2] / "artifacts" / "duration_q_table.json"
+trained_agent = QLearningAgent.load(MODEL_PATH) if MODEL_PATH.exists() else QLearningAgent(epsilon=0, epsilon_min=0)
 model_trained = MODEL_PATH.exists()
+duration_agent = DurationQLearningAgent.load(DURATION_MODEL_PATH) if DURATION_MODEL_PATH.exists() else None
 router = APIRouter(prefix="/api")
 
 
@@ -155,7 +158,7 @@ def run_evaluation(request: EvaluationRequest):
     if unknown:
         raise HTTPException(422, f"unknown scenarios: {', '.join(sorted(unknown))}")
     report = evaluate([SCENARIOS[name] for name in request.scenarios], request.seeds,
-                      request.steps, SignalConfig(), trained_agent)
+                      request.steps, SignalConfig(), trained_agent, duration_agent)
     report["protocol"]["trained_policy"] = model_trained
     report["protocol"]["model_state_count"] = len(trained_agent.q_values)
     return report
@@ -163,7 +166,9 @@ def run_evaluation(request: EvaluationRequest):
 
 @router.get("/model")
 def model_status():
-    return {"trained": model_trained, "states": len(trained_agent.q_values)}
+    return {"trained": model_trained, "states": len(trained_agent.q_values),
+            "duration_trained": duration_agent is not None,
+            "duration_states": len(duration_agent.q_values) if duration_agent else 0}
 
 
 @router.post("/training")
@@ -173,10 +178,11 @@ def train_model(request: TrainRequest):
     training_job.update(status="queued", completed=0, total=request.episodes, error=None)
 
     def worker():
-        global trained_agent, model_trained
+        global trained_agent, model_trained, duration_agent
         try:
             training_job.update(status="running")
             agent = QLearningAgent()
+            duration_model = DurationQLearningAgent()
             rng = Random(2026)
             scenarios = list(SCENARIOS.values())
             rewards = []
@@ -185,13 +191,17 @@ def train_model(request: TrainRequest):
                 env_seed = rng.randrange(1_000_000)
                 agent._rng.seed(rng.randrange(1_000_000))
                 metrics = train_episode(TrafficEnvironment(scenario, env_seed), agent, request.steps)
+                duration_model._rng.seed(rng.randrange(1_000_000))
+                train_duration_episode(TrafficEnvironment(scenario, env_seed), duration_model, request.steps)
                 rewards.append(metrics["reward"])
                 training_job.update(completed=episode + 1)
             agent.save(MODEL_PATH)
-            trained_agent, model_trained = agent, True
+            duration_model.save(DURATION_MODEL_PATH)
+            trained_agent, duration_agent, model_trained = agent, duration_model, True
             for run in runs.values():
                 run.agent = trained_agent
             training_job.update(status="complete", states=len(agent.q_values),
+                                duration_states=len(duration_model.q_values),
                                 mean_reward_last_20=sum(rewards[-20:]) / min(20, len(rewards)))
         except Exception as exc:
             training_job.update(status="failed", error=str(exc))

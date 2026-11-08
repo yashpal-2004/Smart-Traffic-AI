@@ -7,8 +7,8 @@ from app.simulator.environment import BALANCED, NORTH_SURGE, SignalConfig
 
 class EvaluationTests(unittest.TestCase):
     def test_matched_evaluation_is_reproducible_and_well_formed(self):
-        a = evaluate([BALANCED, NORTH_SURGE], [17, 29], 80, SignalConfig(), QLearningAgent(epsilon=0))
-        b = evaluate([BALANCED, NORTH_SURGE], [17, 29], 80, SignalConfig(), QLearningAgent(epsilon=0))
+        a = evaluate([BALANCED, NORTH_SURGE], [17, 29], 80, SignalConfig(), QLearningAgent(epsilon=0, epsilon_min=0))
+        b = evaluate([BALANCED, NORTH_SURGE], [17, 29], 80, SignalConfig(), QLearningAgent(epsilon=0, epsilon_min=0))
         self.assertEqual(a, b)
         self.assertEqual(len(a["episodes"]), 8)
         self.assertEqual(a["summary"]["fixed_time"]["sample_count"], 4)

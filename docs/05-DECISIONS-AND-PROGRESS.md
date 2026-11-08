@@ -87,3 +87,12 @@
 - Results: fixed-time remained at 11.29s served wait, 12.71 mean queue, 535.4 served. Revised Q-learning at 1,500 episodes: 13.53s, 16.31, 527.9. At 5,000 episodes: 21.17s, 24.23, 512.5. More training worsened this policy.
 - Conclusion: the tabular Q-learning formulation is not useful yet. Do not use its checkpoint as evidence of an improved controller. The project needs a better action/state/reward formulation (or a clearly labelled adaptive heuristic comparator) before presenting RL effectiveness.
 - Next exact step: design a green-duration action space and measure the transition reward/credit assignment with a small controlled sweep, keeping fixed-time as the baseline.
+
+
+### 2026-11-08 — Green-duration semi-Markov agent
+- Status: implemented and wired into local evaluation.
+- Changed: added a separate tabular duration-based Q-learning agent with actions selecting 10/15/20/25/30 second greens; each decision learns from accumulated reward across the green interval and amber transition. Added a controlled comparison script. The training API now trains/saves both hold-switch and duration policies; evaluation includes the duration policy when present; model status reports both state counts.
+- Verification: all 17 backend tests pass, including duration action legality, fixed-length episode completion, table shape, API training completion and evaluation.
+- Controlled experiment: 1,500 episodes × 500 steps; held-out 5 seeds across 3 scenarios (15 episodes each). Fixed-time mean wait 11.10s, queue 12.80, served 544.6; hold/switch Q-learning 15.31s, 19.26, 531.1; duration Q-learning 12.34s, 14.99, 538.9. Duration policy improved over hold/switch but remains behind fixed-time.
+- Next exact step: refresh browser and confirm three-policy report, then add the duration policy to the live simulation controller options and improve reward/state tuning without claiming a win.
+- Browser verification: three-policy report is live; default quick evaluation showed duration policy at 16.11s wait and 19.35 queue, between hold/switch (17.74s, 23.16) and fixed-time (11.77s, 13.41). The quick UI evaluation uses a small locally saved model and 9 episodes; the controlled script result above is the more relevant comparison.

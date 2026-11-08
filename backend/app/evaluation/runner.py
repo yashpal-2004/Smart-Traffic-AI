@@ -8,6 +8,7 @@ from statistics import mean, median, pstdev
 
 from app.agents.fixed_time import FixedTimeController
 from app.agents.q_learning import QLearningAgent
+from app.agents.duration_q_learning import DurationQLearningAgent, DURATIONS
 from app.simulator.environment import Scenario, SignalConfig, TrafficEnvironment
 
 
@@ -40,6 +41,21 @@ def run_episode(controller: str, scenario: Scenario, seed: int, steps: int,
             if action == 1:
                 env.request_switch()
             env.step()
+        elif controller == "duration_q_learning":
+            if not isinstance(agent, DurationQLearningAgent):
+                raise ValueError("duration_q_learning requires a duration agent")
+            action = agent.act(env, explore=False)
+            target = DURATIONS[action]
+            while env.time < steps and env.phase_elapsed < target:
+                env.step()
+                queue_sum += sum(len(q) for q in env.queues.values())
+            if env.time < steps and not env.transitioning:
+                env.request_switch()
+                for _ in range(config.amber_seconds):
+                    if env.time >= steps: break
+                    env.step()
+                    queue_sum += sum(len(q) for q in env.queues.values())
+            continue
         else:
             raise ValueError(f"unknown controller: {controller}")
         queue_sum += sum(len(q) for q in env.queues.values())
@@ -68,7 +84,7 @@ def summarize(results: list[EpisodeResult]) -> dict:
 
 
 def evaluate(scenarios: list[Scenario], seeds: list[int], steps: int, config: SignalConfig,
-             agent: QLearningAgent) -> dict:
+             agent: QLearningAgent, duration_agent: DurationQLearningAgent | None = None) -> dict:
     if not scenarios or not seeds or steps < 1:
         raise ValueError("scenarios, seeds, and positive steps are required")
     results = []
@@ -77,11 +93,14 @@ def evaluate(scenarios: list[Scenario], seeds: list[int], steps: int, config: Si
             # Both policies receive identical exogenous arrival random streams.
             results.append(run_episode("fixed_time", scenario, seed, steps, config))
             results.append(run_episode("q_learning", scenario, seed, steps, config, agent))
+            if duration_agent is not None:
+                results.append(run_episode("duration_q_learning", scenario, seed, steps, config, duration_agent))
     return {"protocol": {"paired_seeds": seeds, "steps_per_episode": steps,
                           "scenarios": [s.name for s in scenarios],
                           "wait_definition": "mean queueing seconds among vehicles served during the episode",
                           "queue_definition": "mean queued vehicles observed after each simulation step",
-                          "training_data_excluded": True},
+                          "training_data_excluded": True,
+                          "duration_actions_seconds": list(DURATIONS) if duration_agent is not None else None},
             "summary": summarize(results),
             "episodes": [asdict(row) for row in results]}
 

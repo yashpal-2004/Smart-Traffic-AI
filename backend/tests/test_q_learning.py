@@ -4,6 +4,7 @@ from pathlib import Path
 
 from app.agents.q_learning import QLearningAgent, observe, train_episode
 from app.simulator.environment import SignalConfig, TrafficEnvironment
+from app.agents.duration_q_learning import DURATIONS, DurationQLearningAgent, train_duration_episode
 
 
 class QLearningTests(unittest.TestCase):
@@ -15,7 +16,7 @@ class QLearningTests(unittest.TestCase):
 
     def test_actions_respect_minimum_and_maximum_green(self):
         env = TrafficEnvironment(config=SignalConfig(2, 4, 1))
-        agent = QLearningAgent(epsilon=0)
+        agent = QLearningAgent(epsilon=0, epsilon_min=0)
         self.assertEqual(agent.legal_actions(env), (0,))
         for _ in range(2): env.step()
         self.assertEqual(agent.legal_actions(env), (0, 1))
@@ -40,6 +41,17 @@ class QLearningTests(unittest.TestCase):
             restored = QLearningAgent.load(path)
         self.assertEqual(restored.epsilon, .4)
         self.assertEqual(restored.q_values, agent.q_values)
+
+    def test_duration_actions_train_without_illegal_green_targets(self):
+        config = SignalConfig(5, 30, 2)
+        env = TrafficEnvironment(seed=7, config=config)
+        agent = DurationQLearningAgent()
+        agent._rng.seed(4)
+        result = train_duration_episode(env, agent, 120)
+        self.assertEqual(agent.legal_actions(env), tuple(range(len(DURATIONS))))
+        self.assertEqual(env.time, 120)
+        self.assertIn("average_wait_seconds", result)
+        self.assertTrue(all(len(values) == len(DURATIONS) for values in agent.q_values.values()))
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 {
   "0": "TrafficEnvironment",
-  "1": "observe",
+  "1": "DurationQLearningAgent",
   "2": "Product, Pages, and Premium UI Direction",
   "3": "Milestones and Acceptance Checks",
   "4": "Project Brief",
@@ -20,5 +20,6 @@
   "18": "api/__init__.py",
   "19": "Path",
   "20": "frontend/README.md",
-  "21": "environment.py"
+  "21": "environment.py",
+  "22": "Path"
 }
