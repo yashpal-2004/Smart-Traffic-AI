@@ -95,6 +95,23 @@ def evaluate(scenarios: list[Scenario], seeds: list[int], steps: int, config: Si
             results.append(run_episode("q_learning", scenario, seed, steps, config, agent))
             if duration_agent is not None:
                 results.append(run_episode("duration_q_learning", scenario, seed, steps, config, duration_agent))
+    by_key = {(row.scenario, row.seed, row.controller): row for row in results}
+    paired_deltas = []
+    for scenario in scenarios:
+        for seed in seeds:
+            baseline = by_key[(scenario.name, seed, "fixed_time")]
+            for controller in ("q_learning", "duration_q_learning"):
+                candidate = by_key.get((scenario.name, seed, controller))
+                if candidate is None:
+                    continue
+                paired_deltas.append({
+                    "scenario": scenario.name,
+                    "seed": seed,
+                    "controller": controller,
+                    "wait_seconds": round(candidate.average_wait_seconds - baseline.average_wait_seconds, 3),
+                    "queue_length": round(candidate.average_queue_length - baseline.average_queue_length, 3),
+                    "vehicles_served": candidate.served - baseline.served,
+                })
     return {"protocol": {"paired_seeds": seeds, "steps_per_episode": steps,
                           "scenarios": [s.name for s in scenarios],
                           "wait_definition": "mean queueing seconds among vehicles served during the episode",
@@ -102,6 +119,7 @@ def evaluate(scenarios: list[Scenario], seeds: list[int], steps: int, config: Si
                           "training_data_excluded": True,
                           "duration_actions_seconds": list(DURATIONS) if duration_agent is not None else None},
             "summary": summarize(results),
+            "paired_deltas_vs_fixed_time": paired_deltas,
             "episodes": [asdict(row) for row in results]}
 
 

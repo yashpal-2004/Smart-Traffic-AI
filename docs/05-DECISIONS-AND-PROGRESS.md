@@ -111,3 +111,11 @@
 - Verification: all 18 backend tests pass. Browser check confirmed both numeric controls, the training button, and duration/reward explanations.
 - Known limitation: the two tabular agents are still trained sequentially in one process-local background job; training progress is not resumable after a server restart.
 - Next exact step: add evaluation controls for seed count and make matched per-seed deltas easier to inspect before further policy tuning.
+
+
+### 2026-11-08 — Configurable paired-seed evaluation
+- Status: implemented and browser-verified.
+- Changed: Compare accepts 1–30 matched seeds, generates a reproducible seed sequence, and displays per-scenario/per-seed wait, queue, and served-count deltas for each learned policy against fixed-time. Negative wait/queue deltas mean lower values than baseline.
+- Verification: local dashboard completed an evaluation with two seeds, three scenarios, and 100 steps; all 12 paired delta rows rendered with policy names and baseline definitions.
+- Known limitation: this is descriptive paired reporting; it does not calculate confidence intervals or statistical significance.
+- Next exact step: add uncertainty intervals and a concise summary of how often each policy improves over baseline across paired episodes.
