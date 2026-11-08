@@ -1,8 +1,6 @@
 {
   "0": "QLearningAgent",
-  "1": "traffic_history.py",
   "2": "SumoEnvironment",
-  "3": "runner.py",
   "4": "Milestones and Acceptance Checks",
   "5": "collect_traffic_history.py",
   "6": "routes.py",

@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 from statistics import mean
 from dataclasses import dataclass, field
@@ -25,6 +26,21 @@ def _binary(name: str) -> str | None:
         return None
 
 
+def sumo_gui_status() -> tuple[bool, str | None]:
+    if not _binary("sumo-gui"):
+        return False, "The sumo-gui executable was not found."
+    if sys.platform == "darwin":
+        xquartz_installed = (Path("/Applications/Utilities/XQuartz.app").exists()
+                             or Path("/opt/X11").exists())
+        if not xquartz_installed:
+            return False, "SUMO's desktop viewer on macOS requires XQuartz. Install XQuartz, open it once, then restart the backend."
+        if not os.environ.get("DISPLAY"):
+            return False, "Open XQuartz and restart the backend so SUMO can connect to its display."
+    elif sys.platform.startswith("linux") and not (os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")):
+        return False, "SUMO's desktop viewer needs an active graphical display."
+    return True, None
+
+
 def prepare_network(target: Path) -> Path:
     target.mkdir(parents=True, exist_ok=True)
     net = target / "traffic.net.xml"
@@ -44,16 +60,21 @@ def prepare_network(target: Path) -> Path:
 
 class SumoEnvironment:
     def __init__(self, scenario: Scenario, seed: int, config: SignalConfig, steps: int,
-                 sumo_binary: str = "sumo", amber_seconds: int | None = None):
+                 sumo_binary: str = "sumo", amber_seconds: int | None = None, gui: bool = False):
         try:
             import traci
         except ImportError as exc:
             raise RuntimeError("SUMO support is optional. Install with python -m pip install -r backend/requirements-sumo.txt") from exc
-        binary = _binary(sumo_binary)
+        binary_name = "sumo-gui" if gui else sumo_binary
+        binary = _binary(binary_name)
         if not binary:
-            raise RuntimeError(f"{sumo_binary} not found. Install SUMO and ensure its bin directory is on PATH.")
+            raise RuntimeError(f"{binary_name} not found. Install SUMO and ensure its bin directory is on PATH.")
+        if gui:
+            available, message = sumo_gui_status()
+            if not available:
+                raise RuntimeError(message or "SUMO's desktop viewer is unavailable.")
         self.traci, self.scenario, self.seed, self.config = traci, scenario, seed, config
-        self.sumo_binary, self._requested_amber = sumo_binary, amber_seconds
+        self.sumo_binary, self._requested_amber, self.gui = sumo_binary, amber_seconds, gui
         self.steps_limit = steps
         self.time = self.phase_elapsed = 0
         self.phase = Phase.NORTH_SOUTH
@@ -83,6 +104,8 @@ class SumoEnvironment:
         command=[binary,"-c",str(SUMO_DIR/"traffic.sumocfg"),"--net-file",str(work/"traffic.net.xml"),
                  "--route-files",str(route_file),"--seed",str(seed),"--end",str(steps),
                  "--no-step-log","true","--duration-log.disable","true"]
+        if gui:
+            command.append("--start")
         try:
             # SUMO can take a few seconds to initialize on its first launch,
             # especially when installed from the Python package on macOS.
@@ -165,9 +188,9 @@ class SumoEnvironment:
 
     def reset(self):
         scenario, seed, config, steps = self.scenario, self.seed, self.config, self.steps_limit
-        sumo_binary, amber = self.sumo_binary, self._requested_amber
+        sumo_binary, amber, gui = self.sumo_binary, self._requested_amber, self.gui
         self.close()
-        self.__init__(scenario, seed, config, steps, sumo_binary, amber)
+        self.__init__(scenario, seed, config, steps, sumo_binary, amber, gui)
         return self.snapshot()
 
     def close(self):

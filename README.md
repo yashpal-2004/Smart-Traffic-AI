@@ -83,7 +83,7 @@ Metric definitions: served wait is average queueing time for vehicles served dur
 
 ![Signal Lab component architecture](docs/architecture-light.svg)
 
-The simulator and policies are independent of the web layer. The browser sends JSON to FastAPI; the API can run either the seeded Python model or the optional SUMO/TraCI network for live runs. Choose the engine in the **Simulate** controls. See [the architecture notes](docs/02-TECHNICAL-ARCHITECTURE.md) for endpoint and persistence details.
+The simulator and policies are independent of the web layer. The browser sends JSON to FastAPI; the API can run either the seeded Python model or the optional SUMO/TraCI network for live runs. Choose the engine in the **Simulate** controls. When SUMO is selected, enable **Open SUMO desktop viewer alongside dashboard** to see the native SUMO GUI update with each dashboard step. See [the architecture notes](docs/02-TECHNICAL-ARCHITECTURE.md) for endpoint and persistence details.
 
 ### Run the SUMO-backed comparison
 
@@ -95,6 +95,8 @@ PYTHONPATH=backend python3 backend/scripts/run_sumo_evaluation.py --episodes 100
 ```
 
 The runner builds a four-way, single-lane signalized network from the checked-in SUMO node, edge, and connection files. It trains on separate generated seeds and evaluates fixed-time and Q-learning controllers on the same scenario/seed pairs. The JSON report and learned SUMO Q-table are written under `backend/artifacts/` (ignored by Git). The live SUMO engine uses fixed-time control or the SUMO-trained hold/switch Q-table; run the evaluation command once to create that table. SUMO runs are educational experiments; compare results with identical SUMO versions and settings.
+
+To see SUMO's own animated desktop view as the dashboard steps the same simulation, select **Eclipse SUMO** and enable **Open SUMO desktop viewer alongside dashboard**. On macOS, install and open [XQuartz](https://www.xquartz.org/), then restart the backend (and log out and back in if macOS has not exposed the display yet). SUMO's [installation guide](https://sumo.dlr.de/docs/Installing/) documents the XQuartz requirement. If the desktop viewer is unavailable, the dashboard still renders the live SUMO run and explains what is missing.
 
 ## Repository map
 

@@ -51,8 +51,12 @@ function showSnapshot(data) {
   $('decision-note').textContent = data.transitioning ? 'Amber transition · vehicles stopped' : 'Serving active approaches';
   const names={fixed_time:'Fixed-time baseline',q_learning:'Hold/switch Q-learning',duration_q_learning:'Green-duration Q-learning'};
   $('policy-name').textContent = names[data.controller] || data.controller;
+  const sumoModel = data.model_trained && data.controller === 'q_learning' ? ' · SUMO-trained Q-table' : '';
+  const guiEnabled = $('show-sumo-gui').checked;
+  const guiUnavailable = simulatorCapabilities && !simulatorCapabilities.sumo_gui_available;
+  const guiMessage = simulatorCapabilities?.sumo_gui_message;
   $('engine-note').textContent = data.engine === 'sumo'
-    ? `Active engine: Eclipse SUMO via TraCI${data.model_trained && data.controller === 'q_learning' ? ' · SUMO-trained Q-table' : ''}. The dashboard shows live queue and signal state.`
+    ? `Active engine: Eclipse SUMO via TraCI${sumoModel}. ${guiEnabled ? 'The desktop SUMO viewer and dashboard show the same live run.' : guiUnavailable ? `SUMO is running in the dashboard. Desktop viewer unavailable: ${guiMessage || 'no graphical display is available.'}` : 'The dashboard shows the live SUMO run. The desktop viewer is off.'}`
     : 'Active engine: the project’s seeded Python traffic model.';
   $('policy-desc').textContent = data.controller === 'fixed_time' ? 'Cycles between phases on a fixed schedule.' : data.controller === 'duration_q_learning' ? 'Selects a target green duration using its learned policy.' : 'Chooses to hold or switch using its learned Q-table.';
   if(data.controller==='duration_q_learning' && data.green_target){$('decision-note').textContent=`Chosen green target · ${data.green_target}s`}
@@ -94,7 +98,7 @@ async function createRun() {
   if(runId){const previousRun=runId;runId=null;sessionStorage.removeItem('signal-lab-run-id');await request(`/runs/${previousRun}`,{method:'DELETE'}).catch(()=>{})}
   seed = Math.floor(Math.random() * 9000) + 1000;
   episode++;
-  const data = await request('/runs',{method:'POST',body:JSON.stringify({engine:$('engine').value,scenario:$('scenario').value,controller:$('controller').value,seed})});
+  const data = await request('/runs',{method:'POST',body:JSON.stringify({engine:$('engine').value,sumo_gui:$('show-sumo-gui').checked,scenario:$('scenario').value,controller:$('controller').value,seed})});
   runId=data.id;sessionStorage.setItem('signal-lab-run-id',runId);showSnapshot(data);
 }
 async function doStep(steps=1) {
@@ -121,22 +125,29 @@ $('scenario').addEventListener('change',()=>createRun().catch(e=>toast(e.message
 $('controller').addEventListener('change',()=>createRun().catch(e=>toast(e.message)));
 function syncEngineControls(){
  const engine=$('engine').value,isSumo=engine==='sumo';
+ const guiControl=$('sumo-gui-control'),guiInput=$('show-sumo-gui');
  const qOption=$('controller').querySelector('option[value="q_learning"]');
  const durationOption=$('controller').querySelector('option[value="duration_q_learning"]');
  qOption.disabled=isSumo&&simulatorCapabilities?.sumo_model_trained===false;
  durationOption.disabled=isSumo;
+ const guiAvailable=Boolean(simulatorCapabilities?.sumo_gui_available);
+ guiControl.classList.toggle('hidden',!isSumo);
+ guiInput.disabled=!isSumo||!guiAvailable;
+ if(isSumo&&!guiAvailable)guiInput.checked=false;
  if(isSumo&&($('controller').value==='duration_q_learning'||qOption.disabled))$('controller').value='fixed_time';
  if(!isSumo){$('engine-note').textContent='The project’s seeded Python traffic model is available without optional packages.';return}
  if(!simulatorCapabilities?.sumo_available){$('engine-note').textContent='Eclipse SUMO is unavailable. Install backend/requirements-sumo.txt and restart the API.';return}
+ const guiNote=guiAvailable?'The native SUMO desktop viewer can run alongside the dashboard.':(simulatorCapabilities.sumo_gui_message||'The SUMO desktop viewer is unavailable; the dashboard will show the live SUMO run.');
  $('engine-note').textContent=simulatorCapabilities.sumo_model_trained
-  ? 'Eclipse SUMO runs the intersection through TraCI. Hold/switch Q-learning uses the SUMO-trained checkpoint.'
-  : 'Eclipse SUMO is ready for fixed-time control. Run the SUMO evaluation command once to create its Q-learning checkpoint.';
+  ? `Eclipse SUMO runs through TraCI. Hold/switch Q-learning uses the SUMO-trained checkpoint. ${guiNote}`
+  : `Eclipse SUMO is ready for fixed-time control. Run the SUMO evaluation command once to create its Q-learning checkpoint. ${guiNote}`;
 }
 async function loadSimulatorCapabilities(){
  simulatorCapabilities=await request('/simulators');
  const sumoOption=$('engine').querySelector('option[value="sumo"]');
  const sumoInfo=simulatorCapabilities.simulators.find(item=>item.id==='sumo');
  simulatorCapabilities.sumo_available=Boolean(sumoInfo?.available);
+ simulatorCapabilities.sumo_gui_available=Boolean(simulatorCapabilities.sumo_gui_available);
  sumoOption.disabled=!simulatorCapabilities.sumo_available;
  syncEngineControls();
 }

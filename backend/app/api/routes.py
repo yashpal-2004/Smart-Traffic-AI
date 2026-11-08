@@ -32,6 +32,7 @@ class CreateRunRequest(BaseModel):
     scenario: str = "balanced"
     controller: str = "fixed_time"
     engine: Literal["python", "sumo"] = "python"
+    sumo_gui: bool = False
     seed: int = 0
     green_seconds: int = Field(default=20, ge=1, le=120)
 
@@ -182,10 +183,12 @@ def scenarios():
 @router.get("/simulators")
 def simulators():
     from importlib.util import find_spec
-    from app.simulator.sumo.environment import _binary
+    from app.simulator.sumo.environment import _binary, sumo_gui_status
 
     sumo_available = (find_spec("traci") is not None and bool(_binary("sumo"))
                       and bool(_binary("netconvert")))
+    sumo_gui_available, sumo_gui_message = sumo_gui_status()
+    sumo_gui_available = find_spec("traci") is not None and sumo_gui_available
     sumo_policy = load_sumo_agent()
     return {
         "simulators": [
@@ -193,6 +196,8 @@ def simulators():
             {"id": "sumo", "name": "Eclipse SUMO", "available": sumo_available},
         ],
         "sumo_model_trained": sumo_policy is not None,
+        "sumo_gui_available": sumo_gui_available,
+        "sumo_gui_message": sumo_gui_message,
     }
 
 
@@ -209,6 +214,10 @@ def create_run(request: CreateRunRequest):
     sumo_policy = load_sumo_agent() if request.engine == "sumo" else None
     if request.engine == "sumo" and request.controller == "q_learning" and sumo_policy is None:
         raise HTTPException(409, "No SUMO-trained Q-table found. Run the SUMO evaluation script once to train one.")
+    if request.engine == "sumo" and request.sumo_gui:
+        gui_status = simulators()
+        if not gui_status["sumo_gui_available"]:
+            raise HTTPException(503, gui_status["sumo_gui_message"] or "SUMO's desktop viewer is unavailable.")
     config = SignalConfig(max_green=max(30, request.green_seconds))
     green = min(request.green_seconds, config.max_green)
     run_id = str(uuid4())
@@ -219,7 +228,8 @@ def create_run(request: CreateRunRequest):
         if not simulators()["simulators"][1]["available"]:
             raise HTTPException(503, "SUMO is unavailable. Install backend/requirements-sumo.txt and ensure sumo and netconvert are available.")
         try:
-            env = SumoEnvironment(SCENARIOS[request.scenario], request.seed, config, steps=1_000_000)
+            env = SumoEnvironment(SCENARIOS[request.scenario], request.seed, config,
+                                  steps=1_000_000, gui=request.sumo_gui)
         except (RuntimeError, OSError, subprocess.SubprocessError) as exc:
             raise HTTPException(503, str(exc)) from exc
     else:
