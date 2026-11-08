@@ -4,6 +4,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from uuid import uuid4
 from pathlib import Path
+from threading import Lock, Thread
+from random import Random
 
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -48,6 +50,8 @@ class Run:
 
 
 runs: dict[str, Run] = {}
+training_lock = Lock()
+training_job: dict = {"status": "idle", "completed": 0, "total": 0}
 MODEL_PATH = Path(__file__).resolve().parents[2] / "artifacts" / "q_table.json"
 trained_agent = QLearningAgent.load(MODEL_PATH) if MODEL_PATH.exists() else QLearningAgent(epsilon=0)
 model_trained = MODEL_PATH.exists()
@@ -161,22 +165,43 @@ def model_status():
 
 @router.post("/training")
 def train_model(request: TrainRequest):
-    global trained_agent, model_trained
-    agent = QLearningAgent()
-    from random import Random
-    rng = Random(2026)
-    scenarios = list(SCENARIOS.values())
-    rewards = []
-    for _ in range(request.episodes):
-        scenario = scenarios[rng.randrange(len(scenarios))]
-        env_seed = rng.randrange(1_000_000)
-        agent._rng.seed(rng.randrange(1_000_000))
-        metrics = train_episode(TrafficEnvironment(scenario, env_seed), agent, request.steps)
-        rewards.append(metrics["reward"])
-    agent.save(MODEL_PATH)
-    trained_agent, model_trained = agent, True
-    return {"trained": True, "episodes": request.episodes, "steps_per_episode": request.steps,
-            "states": len(agent.q_values), "mean_reward_last_20": sum(rewards[-20:]) / min(20, len(rewards))}
+    if not training_lock.acquire(blocking=False):
+        raise HTTPException(409, "training is already running")
+    training_job.update(status="queued", completed=0, total=request.episodes, error=None)
+
+    def worker():
+        global trained_agent, model_trained
+        try:
+            training_job.update(status="running")
+            agent = QLearningAgent()
+            rng = Random(2026)
+            scenarios = list(SCENARIOS.values())
+            rewards = []
+            for episode in range(request.episodes):
+                scenario = scenarios[rng.randrange(len(scenarios))]
+                env_seed = rng.randrange(1_000_000)
+                agent._rng.seed(rng.randrange(1_000_000))
+                metrics = train_episode(TrafficEnvironment(scenario, env_seed), agent, request.steps)
+                rewards.append(metrics["reward"])
+                training_job.update(completed=episode + 1)
+            agent.save(MODEL_PATH)
+            trained_agent, model_trained = agent, True
+            for run in runs.values():
+                run.agent = trained_agent
+            training_job.update(status="complete", states=len(agent.q_values),
+                                mean_reward_last_20=sum(rewards[-20:]) / min(20, len(rewards)))
+        except Exception as exc:
+            training_job.update(status="failed", error=str(exc))
+        finally:
+            training_lock.release()
+
+    Thread(target=worker, daemon=True).start()
+    return {"status": "queued", "episodes": request.episodes, "steps_per_episode": request.steps}
+
+
+@router.get("/training")
+def training_status():
+    return {**training_job, "trained_model": model_trained}
 
 
 app = FastAPI(title="Smart Traffic AI", version="0.1.0",

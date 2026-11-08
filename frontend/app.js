@@ -112,8 +112,20 @@ $('compare-button').addEventListener('click',async()=>{
 });
 $('train-button').addEventListener('click',async()=>{
   const button=$('train-button');button.disabled=true;button.textContent='Training…';
-  try{const result=await request('/training',{method:'POST',body:JSON.stringify({episodes:500,steps:500})});toast(`Training complete · ${result.states} states learned`);await createRun()}
-  catch(e){toast(e.message)}finally{button.disabled=false;button.textContent='Train Q-learning'}
+  $('training-progress').classList.remove('hidden');$('training-status').textContent='Training policy…';
+  try{
+    await request('/training',{method:'POST',body:JSON.stringify({episodes:500,steps:500})});
+    let status;
+    do{
+      await new Promise(resolve=>setTimeout(resolve,500));status=await request('/training');
+      $('training-count').textContent=`${status.completed} / ${status.total} episodes`;
+      $('training-bar').style.width=`${status.total?100*status.completed/status.total:0}%`;
+      $('training-status').textContent=status.status==='running'?'Training policy…':status.status==='queued'?'Starting training…':'Training policy…';
+    }while(['queued','running'].includes(status.status));
+    if(status.status==='failed')throw new Error(status.error||'Training failed');
+    toast(`Training complete · ${status.states} states learned`);$('training-status').textContent='Training complete';await createRun();
+  }catch(e){toast(e.message);$('training-status').textContent='Training failed'}
+  finally{button.disabled=false;button.textContent='Train Q-learning'}
 });
 function renderReport(report){
  const target=$('compare-results');target.replaceChildren();const grid=document.createElement('div');grid.className='results-grid';

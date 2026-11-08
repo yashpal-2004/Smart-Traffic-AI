@@ -1,4 +1,5 @@
 import unittest
+import time
 from fastapi.testclient import TestClient
 
 from app.api.routes import app, runs
@@ -41,8 +42,14 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(stepped['history'][-1]['time'], 4)
         result = self.client.post('/api/training', json={'episodes': 1, 'steps': 50})
         self.assertEqual(result.status_code, 200)
-        self.assertTrue(result.json()['trained'])
-        self.assertGreater(result.json()['states'], 0)
+        self.assertEqual(result.json()['status'], 'queued')
+        for _ in range(100):
+            status = self.client.get('/api/training').json()
+            if status['status'] in {'complete', 'failed'}:
+                break
+            time.sleep(.01)
+        self.assertEqual(status['status'], 'complete')
+        self.assertGreater(status['states'], 0)
 
 
 if __name__ == '__main__':

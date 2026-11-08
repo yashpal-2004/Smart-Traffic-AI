@@ -57,3 +57,11 @@
 - Verification: 16 backend tests pass, including run history and a short training request; dashboard reload confirmed API online and Compare page shows training control.
 - Known limitations: UI training currently runs synchronously and can take a while at default 500 × 500; trained model persists on local disk only; current tabular policy quality still requires serious evaluation.
 - Next exact step: benchmark trained policy with longer fixed-seed training and held-out seeds, add training progress feedback or background job if needed, and improve chart axis/legend semantics.
+
+
+### 2026-11-08 — Background training progress
+- Status: implemented; pending live-browser check.
+- Changed: model training now runs in a worker thread with `/api/training` progress/status polling; the UI displays episode progress and completion/failure state while remaining responsive. Newly trained policies are attached to active runs and used for later evaluations.
+- Verification: all 16 backend tests pass, including queue history and background training completion polling.
+- Known limitations: training jobs and progress are process-local and not resumable after server restart; API evaluation still runs synchronously.
+- Next exact step: verify the browser progress display, then improve comparison interpretation/export and revisit model quality.
