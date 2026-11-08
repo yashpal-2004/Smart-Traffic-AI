@@ -4,12 +4,42 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 import json
 from pathlib import Path
-from statistics import mean, median, pstdev
+from statistics import mean, median, pstdev, stdev
 
 from app.agents.fixed_time import FixedTimeController
 from app.agents.q_learning import QLearningAgent
 from app.agents.duration_q_learning import DurationQLearningAgent, DURATIONS
 from app.simulator.environment import Scenario, SignalConfig, TrafficEnvironment
+
+
+def paired_delta_summary(deltas: list[dict]) -> dict:
+    """Summarize paired differences with a two-sided 95% t interval."""
+    t_critical = (None, 12.706, 4.303, 3.182, 2.776, 2.571, 2.447, 2.365, 2.306,
+                  2.262, 2.228, 2.201, 2.179, 2.160, 2.145, 2.131, 2.120, 2.110,
+                  2.101, 2.093, 2.086, 2.080, 2.074, 2.069, 2.064, 2.060, 2.056,
+                  2.052, 2.048, 2.045, 2.042)
+    summary = {}
+    for controller in ("q_learning", "duration_q_learning"):
+        rows = [row for row in deltas if row["controller"] == controller]
+        if not rows:
+            continue
+        metrics = {}
+        for key in ("wait_seconds", "queue_length", "vehicles_served"):
+            values = [row[key] for row in rows]
+            avg = mean(values)
+            if len(values) < 2:
+                low = high = avg
+            else:
+                critical = t_critical[len(values) - 1] if len(values) <= 30 else 1.96
+                margin = critical * stdev(values) / len(values) ** 0.5
+                low, high = avg - margin, avg + margin
+            metrics[key] = {"mean": round(avg, 3), "ci95_low": round(low, 3), "ci95_high": round(high, 3)}
+        wait_values = [row["wait_seconds"] for row in rows]
+        metrics["wait_improvements"] = sum(value < 0 for value in wait_values)
+        metrics["wait_ties"] = sum(value == 0 for value in wait_values)
+        metrics["sample_count"] = len(rows)
+        summary[controller] = metrics
+    return summary
 
 
 @dataclass(frozen=True)
@@ -120,6 +150,7 @@ def evaluate(scenarios: list[Scenario], seeds: list[int], steps: int, config: Si
                           "duration_actions_seconds": list(DURATIONS) if duration_agent is not None else None},
             "summary": summarize(results),
             "paired_deltas_vs_fixed_time": paired_deltas,
+            "paired_summary_vs_fixed_time": paired_delta_summary(paired_deltas),
             "episodes": [asdict(row) for row in results]}
 
 

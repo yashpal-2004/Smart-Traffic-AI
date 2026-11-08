@@ -118,4 +118,12 @@
 - Changed: Compare accepts 1–30 matched seeds, generates a reproducible seed sequence, and displays per-scenario/per-seed wait, queue, and served-count deltas for each learned policy against fixed-time. Negative wait/queue deltas mean lower values than baseline.
 - Verification: local dashboard completed an evaluation with two seeds, three scenarios, and 100 steps; all 12 paired delta rows rendered with policy names and baseline definitions.
 - Known limitation: this is descriptive paired reporting; it does not calculate confidence intervals or statistical significance.
-- Next exact step: add uncertainty intervals and a concise summary of how often each policy improves over baseline across paired episodes.
+- Next exact step: inspect the interval behavior across larger seed counts, document sample-size sensitivity, and add scenario-specific paired summaries.
+
+
+### 2026-11-08 — Paired improvement summary and uncertainty intervals
+- Status: implemented; browser verification pending.
+- Changed: evaluation responses summarize wait, queue, and served-count paired differences with two-sided 95% t intervals, plus the count of episodes where wait improved or tied. The Compare page presents interval estimates and win counts above the row-level table.
+- Method: intervals use the sample standard deviation of paired differences and a t critical value through 30 observations, then 1.96 for larger samples. Values are rounded to three decimals.
+- Known limitation: pooled intervals combine scenarios and assume independent paired differences with an approximately normal mean; small seed counts produce wide, unstable intervals and should be interpreted cautiously.
+- Next exact step: inspect interval behavior across larger seed counts, document sample-size sensitivity, and add scenario-specific paired summaries.
