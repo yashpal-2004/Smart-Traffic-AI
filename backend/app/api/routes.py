@@ -18,6 +18,7 @@ from typing import Any, Literal
 
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from app.agents.fixed_time import FixedTimeController
@@ -428,3 +429,5 @@ app = FastAPI(title="Smart Traffic AI", version="0.1.0",
 app.add_middleware(CORSMiddleware, allow_origins=["http://127.0.0.1:4173", "http://localhost:4173"],
                    allow_methods=["GET", "POST", "DELETE"], allow_headers=["Content-Type"])
 app.include_router(router)
+FRONTEND_DIR = Path(__file__).resolve().parents[3] / "frontend"
+app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")

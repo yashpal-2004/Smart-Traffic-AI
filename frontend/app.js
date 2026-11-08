@@ -1,4 +1,8 @@
-const API = window.TRAFFIC_API_URL || 'http://127.0.0.1:8000/api';
+const LOCAL_API = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+  && window.location.port === '4173'
+  ? 'http://127.0.0.1:8000/api'
+  : '/api';
+const API = window.TRAFFIC_API_URL || LOCAL_API;
 const $ = (id) => document.getElementById(id);
 let runId = sessionStorage.getItem('signal-lab-run-id');
 let timer = null;
