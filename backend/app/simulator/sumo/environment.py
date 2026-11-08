@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from app.simulator.environment import Approach, Phase, Scenario, SignalConfig, Snapshot
 
 SUMO_DIR = Path(__file__).resolve().parent
+SUMO_ENVIRONMENT_VERSION = 3  # includes link ordering and delayed-departure queues
 
 
 def _binary(name: str) -> str | None:
@@ -94,6 +95,7 @@ class SumoEnvironment:
         self.metrics=Metrics()
         self.queues = {a: [] for a in Approach}
         self._wait_by_id = {}
+        self._pending_wait_by_id = {}
         self._last_departed=set()
         self._temp=tempfile.TemporaryDirectory(prefix="traffic-sumo-")
         work=Path(self._temp.name)
@@ -111,7 +113,8 @@ class SumoEnvironment:
             # especially when installed from the Python package on macOS.
             self.traci.start(command,label=self._connection_label,numRetries=30)
             self.conn=self.traci.getConnection(self._connection_label)
-            self.conn.trafficlight.setRedYellowGreenState("center", "GGrr")
+            self._build_signal_link_map()
+            self._signal()
         except Exception:
             self._temp.cleanup()
             raise
@@ -127,15 +130,32 @@ class SumoEnvironment:
         route_xml=''.join(f'<route id="route_{name}" edges="{edges}"/>' for name,edges in routes.items())
         return '<routes><vType id="car" accel="2.6" decel="4.5" length="5" maxSpeed="13.89"/> '+route_xml+''.join(flows)+'</routes>'
 
+    def _build_signal_link_map(self):
+        links = self.conn.trafficlight.getControlledLinks("center")
+        self._signal_link_count = len(links)
+        self._signal_link_approach = {}
+        for index, connections in enumerate(links):
+            approaches = {
+                incoming.split("_in_", 1)[0]
+                for incoming, _, _ in connections
+                if "_in_" in incoming
+            }
+            if len(approaches) == 1:
+                self._signal_link_approach[index] = approaches.pop()
+        found = set(self._signal_link_approach.values())
+        required = {approach.value for approach in Approach}
+        if found != required:
+            raise RuntimeError(f"SUMO signal links do not cover all approaches: {sorted(found)}")
+
     @property
     def transitioning(self): return self._amber_remaining>0
 
     def _signal(self):
-        if self.phase==Phase.NORTH_SOUTH:
-            state='yyrr' if self.transitioning else 'GGrr'
-        else:
-            state='rryy' if self.transitioning else 'rrGG'
-        self.conn.trafficlight.setRedYellowGreenState("center",state)
+        active = {"north", "south"} if self.phase == Phase.NORTH_SOUTH else {"east", "west"}
+        color = "y" if self.transitioning else "G"
+        state = "".join(color if self._signal_link_approach.get(index) in active else "r"
+                        for index in range(self._signal_link_count))
+        self.conn.trafficlight.setRedYellowGreenState("center", state)
 
     def request_switch(self):
         if self.transitioning or self.phase_elapsed<self.config.min_green: return False
@@ -149,6 +169,12 @@ class SumoEnvironment:
         for approach,edge in ((Approach.NORTH,"north_in"),(Approach.SOUTH,"south_in"),(Approach.EAST,"east_in"),(Approach.WEST,"west_in")):
             lane=f"{edge}_0"
             result[approach]=self.conn.lane.getLastStepHaltingNumber(lane)
+        for vehicle_id in self.conn.simulation.getPendingVehicles():
+            approach_name = vehicle_id.split(".", 1)[0].removeprefix("flow_")
+            try:
+                result[Approach(approach_name)] += 1
+            except ValueError:
+                continue
         self.queues={a:[None]*n for a,n in result.items()}
         return Snapshot(
             time=self.time,
@@ -175,19 +201,41 @@ class SumoEnvironment:
                 "angle": round(self.conn.vehicle.getAngle(vehicle_id), 1),
                 "speed": round(self.conn.vehicle.getSpeed(vehicle_id), 2),
             })
+        (min_x, min_y), (max_x, max_y) = self.conn.simulation.getNetBoundary()
+        junction_shape = self.conn.junction.getShape("center")
+        junction_bounds = {
+            "min_x": min(point[0] for point in junction_shape),
+            "max_x": max(point[0] for point in junction_shape),
+            "min_y": min(point[1] for point in junction_shape),
+            "max_y": max(point[1] for point in junction_shape),
+        }
+        signal_state = self.conn.trafficlight.getRedYellowGreenState("center")
+        signal_states = {
+            approach: signal_state[index]
+            for index, approach in self._signal_link_approach.items()
+        }
         return {
             "vehicles": vehicles,
-            "signal_state": self.conn.trafficlight.getRedYellowGreenState("center"),
-            "network_bounds": {"min_x": -300, "max_x": 300, "min_y": -300, "max_y": 300},
+            "signal_state": signal_state,
+            "signal_states": signal_states,
+            "network_bounds": {
+                "min_x": min_x, "max_x": max_x,
+                "min_y": min_y, "max_y": max_y,
+            },
+            "junction_bounds": junction_bounds,
         }
 
     def step(self, switch=False):
         if switch:
             self.request_switch()
+        pending_before_step = self.conn.simulation.getPendingVehicles()
+        for vehicle_id in pending_before_step:
+            self._pending_wait_by_id[vehicle_id] = self._pending_wait_by_id.get(vehicle_id, 0) + 1
         self.conn.simulationStep()
         departed=self.conn.simulation.getDepartedIDList()
         arrived=self.conn.simulation.getArrivedIDList()
-        for vehicle in departed: self._wait_by_id[vehicle]=0
+        for vehicle in departed:
+            self._wait_by_id[vehicle] = self._pending_wait_by_id.pop(vehicle, 0)
         for vehicle in self.conn.vehicle.getIDList():
             if self.conn.vehicle.getSpeed(vehicle) < 0.1:
                 self._wait_by_id[vehicle] = self._wait_by_id.get(vehicle, 0) + 1

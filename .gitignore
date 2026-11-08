@@ -9,3 +9,6 @@ backend/artifacts/
 artifacts/
 
 backend/data/
+
+# Generated code graph cache
+graphify-out/cache/

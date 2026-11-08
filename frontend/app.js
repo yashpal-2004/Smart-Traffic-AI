@@ -77,29 +77,48 @@ function drawSumoNetwork(visualization, history, current) {
   vehicleLayer.replaceChildren();
   const ns = 'http://www.w3.org/2000/svg';
   const vehiclePalette = ['#F1B544', '#F2D545', '#49C85B', '#5DA8E8', '#E27C52'];
+  const reportedBounds = visualization?.network_bounds || { min_x: 0, max_x: 600, min_y: 0, max_y: 600 };
+  // Older backends reported source bounds (-300..300), while TraCI vehicle
+  // positions use SUMO's offset world coordinates (0..600).
+  const bounds = Number(reportedBounds.min_x) < 0 || Number(reportedBounds.min_y) < 0
+    ? { min_x: 0, max_x: Number(reportedBounds.max_x) - Number(reportedBounds.min_x), min_y: 0, max_y: Number(reportedBounds.max_y) - Number(reportedBounds.min_y) }
+    : reportedBounds;
+  const junction = visualization?.junction_bounds || { min_x: 292.8, max_x: 307.2, min_y: 292.8, max_y: 307.2 };
+  const projectAxis = (value, worldMin, worldMax, junctionMin, junctionMax, outerStart, junctionStart, junctionEnd, outerEnd) => {
+    if (value <= junctionMin) return outerStart + (value - worldMin) / (junctionMin - worldMin) * (junctionStart - outerStart);
+    if (value >= junctionMax) return junctionEnd + (value - junctionMax) / (worldMax - junctionMax) * (outerEnd - junctionEnd);
+    return junctionStart + (value - junctionMin) / (junctionMax - junctionMin) * (junctionEnd - junctionStart);
+  };
   for (const vehicle of vehicles) {
-    const x = 380 + Number(vehicle.x || 0) * .84;
-    const y = 285 - Number(vehicle.y || 0) * .84;
+    const angle = Number(vehicle.angle ?? 0);
+    // Scale the tiny SUMO junction to the drawn junction while keeping the
+    // approaches fitted to the map. This preserves the true stop-line location.
+    const x = projectAxis(Number(vehicle.x ?? 300), bounds.min_x, bounds.max_x, junction.min_x, junction.max_x, 0, 310, 450, 760);
+    const y = projectAxis(Number(vehicle.y ?? 300), bounds.min_y, bounds.max_y, junction.min_y, junction.max_y, 570, 355, 215, 0);
     const group = document.createElementNS(ns, 'g');
     group.setAttribute('class', 'sumo-vehicle');
-    group.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${Number(vehicle.angle || 0)})`);
+    group.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${angle})`);
     const title = document.createElementNS(ns, 'title');
     title.textContent = `${vehicle.id} · ${Number(vehicle.speed || 0).toFixed(1)} m/s`;
     group.append(title);
     const body = document.createElementNS(ns, 'rect');
-    body.setAttribute('class', 'sumo-vehicle-body'); body.setAttribute('x', '-5'); body.setAttribute('y', '-10'); body.setAttribute('width', '10'); body.setAttribute('height', '20'); body.setAttribute('rx', '3');
+    // TraCI positions the vehicle at its front bumper. Draw the body behind
+    // that point so stopped vehicles remain behind the mapped stop line.
+    body.setAttribute('class', 'sumo-vehicle-body'); body.setAttribute('x', '-5'); body.setAttribute('y', '0'); body.setAttribute('width', '10'); body.setAttribute('height', '20'); body.setAttribute('rx', '3');
     const colorSeed = [...String(vehicle.id)].reduce((total, character) => total + character.charCodeAt(0), 0);
     body.style.fill = vehiclePalette[colorSeed % vehiclePalette.length];
     const glass = document.createElementNS(ns, 'rect');
-    glass.setAttribute('class', 'sumo-vehicle-glass'); glass.setAttribute('x', '-3.3'); glass.setAttribute('y', '-6'); glass.setAttribute('width', '6.6'); glass.setAttribute('height', '5'); glass.setAttribute('rx', '1.5');
+    glass.setAttribute('class', 'sumo-vehicle-glass'); glass.setAttribute('x', '-3.3'); glass.setAttribute('y', '3'); glass.setAttribute('width', '6.6'); glass.setAttribute('height', '5'); glass.setAttribute('rx', '1.5');
     group.append(body, glass); vehicleLayer.append(group);
   }
   $('sumo-vehicle-count').textContent = `${vehicles.length} vehicle${vehicles.length === 1 ? '' : 's'} in network`;
 
-  const states = String(visualization?.signal_state || (current.phase === 'north_south' ? 'GGrr' : 'rrGG'));
-  const approaches = { north: 0, south: 1, east: 2, west: 3 };
+  const states = String(visualization?.signal_state || (current.phase === 'north_south' ? 'GrGr' : 'rGrG'));
+  // Older API responses expose only the generated north, east, south, west order.
+  const approaches = { north: 0, south: 2, east: 1, west: 3 };
   document.querySelectorAll('.sumo-signal').forEach(signal => {
-    const state = states[approaches[signal.dataset.approach]] || 'r';
+    const state = visualization?.signal_states?.[signal.dataset.approach]
+      || states[approaches[signal.dataset.approach]] || 'r';
     const color = state.toLowerCase() === 'g' ? 'green' : state.toLowerCase() === 'y' ? 'amber' : 'red';
     signal.querySelectorAll('.signal-lamp').forEach(lamp => lamp.setAttribute('class', 'signal-lamp'));
     const lampIndex = color === 'red' ? 0 : color === 'amber' ? 1 : 2;
@@ -225,7 +244,7 @@ function syncEngineControls(){
  const guiNote=guiAvailable?'The native SUMO desktop viewer can run alongside the dashboard.':(simulatorCapabilities.sumo_gui_message||'The SUMO desktop viewer is unavailable; the dashboard will show the live SUMO run.');
  $('engine-note').textContent=simulatorCapabilities.sumo_model_trained
   ? `Eclipse SUMO runs through TraCI. Hold/switch Q-learning uses the SUMO-trained checkpoint. ${guiNote}`
-  : `Eclipse SUMO is ready for fixed-time control. Run the SUMO evaluation command once to create its Q-learning checkpoint. ${guiNote}`;
+  : `Eclipse SUMO is ready for fixed-time control. Its Q-learning checkpoint is missing or outdated; rerun the SUMO evaluation command to retrain it. ${guiNote}`;
 }
 async function loadSimulatorCapabilities(){
  simulatorCapabilities=await request('/simulators');

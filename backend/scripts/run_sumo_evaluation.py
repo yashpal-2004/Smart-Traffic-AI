@@ -1,6 +1,7 @@
 """Train/evaluate the Q learner in SUMO; install optional SUMO dependencies first."""
 from __future__ import annotations
 import argparse
+import json
 import random
 from pathlib import Path
 
@@ -8,7 +9,7 @@ from app.agents.fixed_time import FixedTimeController
 from app.agents.q_learning import QLearningAgent, train_episode
 from app.evaluation.runner import EpisodeResult, paired_delta_summary, summarize, write_report
 from app.simulator.environment import SCENARIOS, SignalConfig
-from app.simulator.sumo.environment import SumoEnvironment
+from app.simulator.sumo.environment import SumoEnvironment, SUMO_ENVIRONMENT_VERSION
 
 
 def episode(controller, scenario, seed, steps, config, agent=None):
@@ -24,9 +25,12 @@ def episode(controller, scenario, seed, steps, config, agent=None):
                 env.step()
             qsum+=sum(env.snapshot().queues.values())
         waits=env.metrics.wait_by_vehicle
+        pending_at_end=len(env.conn.simulation.getPendingVehicles())
         return EpisodeResult(controller,scenario.name,seed,steps,env.metrics.total_arrived,
              env.metrics.total_served,sum(waits)/len(waits) if waits else 0.0,qsum/steps,
-             env.metrics.max_total_queue,env.metrics.total_wait_seconds)
+             env.metrics.max_total_queue,env.metrics.total_wait_seconds,
+             pending_at_end=pending_at_end,
+             demand_generated=env.metrics.total_arrived+pending_at_end)
     finally: env.close()
 
 
@@ -49,7 +53,11 @@ def main():
         env=SumoEnvironment(scenario,rng.randrange(1_000_000),config,args.steps)
         try:train_episode(env,agent,args.steps)
         finally:env.close()
-    agent.save('backend/artifacts/sumo_q_table.json')
+    checkpoint_path=Path('backend/artifacts/sumo_q_table.json')
+    agent.save(checkpoint_path)
+    checkpoint=json.loads(checkpoint_path.read_text(encoding='utf-8'))
+    checkpoint['sumo_environment_version']=SUMO_ENVIRONMENT_VERSION
+    checkpoint_path.write_text(json.dumps(checkpoint,indent=2),encoding='utf-8')
     rows=[]
     evaluation_number = 0
     for scenario in scenarios:
@@ -67,12 +75,20 @@ def main():
             deltas.append({'scenario':scenario.name,'seed':seed,'controller':'q_learning',
                 'wait_seconds':round(b.average_wait_seconds-a.average_wait_seconds,3),
                 'queue_length':round(b.average_queue_length-a.average_queue_length,3),
-                'vehicles_served':b.served-a.served})
-    report={'protocol':{'simulator':'Eclipse SUMO via TraCI','paired_seeds':args.seeds,
+                'vehicles_served':b.served-a.served,
+                'pending_at_end':b.pending_at_end-a.pending_at_end,
+                'demand_generated':b.demand_generated-a.demand_generated})
+    report={'protocol':{'simulator':'Eclipse SUMO via TraCI',
+        'sumo_environment_version':SUMO_ENVIRONMENT_VERSION,
+        'signal_phases':{'north_south':['north','south'],'east_west':['east','west']},
+        'fixed_time_green_seconds':20,'paired_seeds':args.seeds,
         'steps_per_episode':args.steps,'training_episodes':args.episodes,
         'scenarios':[s.name for s in scenarios],'training_data_excluded':True,
+        'arrived_definition':'Vehicles that successfully entered the SUMO network during the episode.',
+        'pending_at_end_definition':'Generated vehicles still waiting for insertion at the end of the episode.',
+        'demand_generated_definition':'Vehicles entered during the episode plus generated vehicles still pending at the end.',
         'wait_definition':'Mean accumulated vehicle waiting time among vehicles arriving at their destination.',
-        'queue_definition':'Mean halted vehicles counted across the four inbound lanes per simulation step.'},
+        'queue_definition':'Mean halted vehicles on inbound lanes plus generated vehicles pending insertion per simulation step.'},
         'summary':summarize(rows),'paired_deltas_vs_fixed_time':deltas,
         'paired_summary_vs_fixed_time':paired_delta_summary(deltas),
         'episodes':[r.__dict__ for r in rows]}

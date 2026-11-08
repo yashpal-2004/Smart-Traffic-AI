@@ -8,6 +8,7 @@ from threading import Lock, Thread
 from random import Random
 from datetime import datetime, timezone
 from hashlib import sha256
+import json
 import os
 import re
 import subprocess
@@ -99,7 +100,19 @@ def source_revision_metadata() -> dict:
 
 def load_sumo_agent() -> QLearningAgent | None:
     global sumo_agent
-    sumo_agent = QLearningAgent.load(SUMO_MODEL_PATH) if SUMO_MODEL_PATH.is_file() else None
+    from app.simulator.sumo.environment import SUMO_ENVIRONMENT_VERSION
+
+    if not SUMO_MODEL_PATH.is_file():
+        sumo_agent = None
+        return sumo_agent
+    try:
+        checkpoint = json.loads(SUMO_MODEL_PATH.read_text(encoding="utf-8"))
+        if checkpoint.get("sumo_environment_version") != SUMO_ENVIRONMENT_VERSION:
+            sumo_agent = None
+            return sumo_agent
+        sumo_agent = QLearningAgent.load(SUMO_MODEL_PATH)
+    except (OSError, ValueError, TypeError):
+        sumo_agent = None
     return sumo_agent
 
 
@@ -215,7 +228,7 @@ def create_run(request: CreateRunRequest):
         raise HTTPException(422, "green-duration Q-learning is not available in the SUMO simulator yet")
     sumo_policy = load_sumo_agent() if request.engine == "sumo" else None
     if request.engine == "sumo" and request.controller == "q_learning" and sumo_policy is None:
-        raise HTTPException(409, "No SUMO-trained Q-table found. Run the SUMO evaluation script once to train one.")
+        raise HTTPException(409, "No compatible SUMO-trained Q-table found. Rerun the SUMO evaluation script to train one.")
     if request.engine == "sumo" and request.sumo_gui:
         gui_status = simulators()
         if not gui_status["sumo_gui_available"]:

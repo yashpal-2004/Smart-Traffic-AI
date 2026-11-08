@@ -24,7 +24,7 @@ def paired_delta_summary(deltas: list[dict]) -> dict:
         if not rows:
             continue
         metrics = {}
-        for key in ("wait_seconds", "queue_length", "vehicles_served"):
+        for key in ("wait_seconds", "queue_length", "vehicles_served", "pending_at_end", "demand_generated"):
             values = [row[key] for row in rows]
             avg = mean(values)
             if len(values) < 2:
@@ -56,6 +56,8 @@ class EpisodeResult:
     average_queue_length: float
     max_queue: int
     total_wait_seconds: int
+    pending_at_end: int = 0
+    demand_generated: int = 0
 
 
 def run_episode(controller: str, scenario: Scenario, seed: int, steps: int,
@@ -94,7 +96,7 @@ def run_episode(controller: str, scenario: Scenario, seed: int, steps: int,
     m = env.metrics
     return EpisodeResult(controller, scenario.name, seed, steps, m.total_arrived, m.total_served,
                          m.average_wait_seconds, queue_sum / steps, m.max_total_queue,
-                         m.total_wait_seconds)
+                         m.total_wait_seconds, demand_generated=m.total_arrived)
 
 
 def summarize(results: list[EpisodeResult]) -> dict:
@@ -106,11 +108,15 @@ def summarize(results: list[EpisodeResult]) -> dict:
         waits = [r.average_wait_seconds for r in rows]
         queues = [r.average_queue_length for r in rows]
         served = [r.served for r in rows]
+        pending = [r.pending_at_end for r in rows]
+        demand = [r.demand_generated for r in rows]
         summary[controller] = {
             "sample_count": len(rows),
             "average_wait_seconds": {"mean": mean(waits), "median": median(waits), "population_stddev": pstdev(waits)},
             "average_queue_length": {"mean": mean(queues), "median": median(queues), "population_stddev": pstdev(queues)},
             "vehicles_served": {"mean": mean(served), "median": median(served), "population_stddev": pstdev(served)},
+            "pending_at_end": {"mean": mean(pending), "median": median(pending), "population_stddev": pstdev(pending)},
+            "demand_generated": {"mean": mean(demand), "median": median(demand), "population_stddev": pstdev(demand)},
         }
     return summary
 
@@ -143,6 +149,8 @@ def evaluate(scenarios: list[Scenario], seeds: list[int], steps: int, config: Si
                     "wait_seconds": round(candidate.average_wait_seconds - baseline.average_wait_seconds, 3),
                     "queue_length": round(candidate.average_queue_length - baseline.average_queue_length, 3),
                     "vehicles_served": candidate.served - baseline.served,
+                    "pending_at_end": candidate.pending_at_end - baseline.pending_at_end,
+                    "demand_generated": candidate.demand_generated - baseline.demand_generated,
                 })
     scenario_summaries = {
         scenario.name: paired_delta_summary([row for row in paired_deltas if row["scenario"] == scenario.name])
