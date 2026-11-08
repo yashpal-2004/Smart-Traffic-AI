@@ -49,12 +49,12 @@ Status key: `NOT STARTED`, `IN PROGRESS`, `BLOCKED`, `DONE`.
 - [x] Confirm the dashboard loads from a clean page session and close the milestone.
 **Acceptance:** live public measurements can be read and explored; missing/upstream errors are visible; the app never sends commands to external signals or presents lane identifiers as directions.
 
-## M8 — Traffic forecasting portfolio workflow (IN PROGRESS)
+## M8 — Traffic forecasting portfolio workflow (DONE)
 - [x] Persist unique public traffic observations locally with a repeatable collector and API capture path.
 - [x] Implement an interpretable lag-based ridge model and persistence baseline.
 - [x] Evaluate with a chronological one-step holdout and MAE/RMSE; expose observations and predictions in the dashboard.
-- [ ] Collect at least 24 distinct observations for a site and record the real-data model-versus-baseline metrics.
-- [ ] Confirm whether the model beats persistence on held-out data; report honestly if it does not.
+- [x] Collect at least 24 distinct observations for a site and record the real-data model-versus-baseline metrics.
+- [x] Confirm whether the model beats persistence on held-out data; report honestly if it does not.
 **Acceptance:** an internship reviewer can run the collector, reproduce the holdout evaluation, inspect forecast errors, and see the data coverage and limitations. Do not claim a forecast improvement without held-out evidence.
 
 ## Work protocol

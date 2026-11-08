@@ -68,6 +68,8 @@ python3 backend/scripts/collect_traffic_history.py --interval 60 --site-id "YOUR
 
 Replace `YOUR_SITE_ID` with the ID shown in the City Feed selector. Stop with `Ctrl+C`. Local SQLite data is stored in ignored `backend/data/traffic_history.sqlite3`. The dashboard's **Capture snapshot** button also targets the selected site and can backfill its recent available records. After at least 24 unique source timestamps for a site, choose that site and select **Train & evaluate forecast**. The report compares a lag-based ridge regression with a persistence baseline on the final 20% of the timeline and reports MAE/RMSE plus a next-cycle estimate. A lower model error is not guaranteed; the project does not call the estimate an hourly forecast and does not feed the aggregate count into directional signal control.
 
+The first recorded real-data evaluation is available at [`docs/sample-evaluation/traffic-forecast-site-102.json`](docs/sample-evaluation/traffic-forecast-site-102.json). For site 102, 24 observations were collected over about 40 minutes and the final 5 were held out: persistence MAE/RMSE was 6.600/6.826 vehicles per cycle; ridge regression was 8.703/9.935. **The model did not beat the baseline.** This short evaluation is a reproducible portfolio example, not evidence that the model generalizes; collect multiple days and reserve a later untouched test window before making broader claims.
+
 Metric definitions: served wait is average queueing time for vehicles served during an episode; queue length is the average number waiting after each simulation step; served vehicles is total throughput in the episode. Scenario definitions and interval assumptions are included in each report.
 
 ## Architecture

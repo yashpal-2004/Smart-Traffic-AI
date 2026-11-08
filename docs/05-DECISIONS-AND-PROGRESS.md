@@ -208,9 +208,9 @@
 
 
 ### 2026-11-08 — M8 traffic forecasting workflow implementation
-- Status: IN PROGRESS; implementation is available, but real-data validation is pending collection.
+- Status: DONE.
 - Added: local SQLite storage for unique `(site_id, source_timestamp)` snapshots; a repeatable CLI collector and manual API capture endpoint; selected-site capture/backfill to avoid the public API's broad 100-row page truncating lanes; per-site history summaries; chronological 80/20 holdout evaluation; persistence and ridge-regression forecasts with MAE/RMSE; and a City Feed workflow to collect, choose a site, train/evaluate, and inspect validation predictions.
 - Model: ridge-regularized linear regression over the previous three cycle counts plus hour-of-day sine/cosine. Validation is one-step rolling: each held-out prediction uses preceding observed counts, and its MAE/RMSE is compared with carrying forward the previous count. The next-cycle estimate uses the median observed timestamp interval.
-- Verification: Python modules compiled; live API collection persisted 63 site observations, and selected-site backfill added four unique records for site 102 (five total). Browser showed the history controls and correctly reported `insufficient_data` with 5 of 24 observations. No automated test suite was run.
-- No performance claim: the actual model-vs-baseline error metrics are unavailable until the collector captures at least 24 distinct source timestamps for one site.
-- Next exact step: select a site shown in City Feed and run `python3 backend/scripts/collect_traffic_history.py --interval 60 --site-id "YOUR_SITE_ID"` for enough unique provider updates, then evaluate that site and record whether regression beats persistence. If it does not, report that result rather than tune against the holdout.
+- Verification: Python modules compiled; live site-specific collection stored 24 unique timestamps for site 102 from 06:41–07:21 UTC. The API generated a five-sample chronological holdout, and the browser's history/insufficient-data states were inspected before collecting enough data. The final report is saved as `docs/sample-evaluation/traffic-forecast-site-102.json`. No automated test suite was run.
+- Real-data result (vehicles per signal-controller cycle): persistence baseline MAE 6.600, RMSE 6.826; ridge regression MAE 8.703, RMSE 9.935; holdout n=5. Ridge did not beat the baseline. This small, short-window result is exploratory, not a general performance claim.
+- Next exact step: M8 is complete. If extending the portfolio, gather a longer history (multiple days) and keep a new future time window untouched for final evaluation before trying other models.

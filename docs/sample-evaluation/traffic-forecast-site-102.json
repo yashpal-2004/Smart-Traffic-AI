@@ -1,0 +1,274 @@
+{
+  "artifact_type": "real_public_traffic_forecast_evaluation",
+  "generated_at": "2026-11-08T07:29:21.055038+00:00",
+  "source": {
+    "publisher": "Brisbane City Council",
+    "dataset": "Traffic Management \u2014 Intersection volume",
+    "url": "https://data.brisbane.qld.gov.au/explore/dataset/traffic-data-at-intersection/",
+    "license": "CC BY 4.0",
+    "site_id": "102"
+  },
+  "report": {
+    "status": "ready",
+    "site_id": "102",
+    "observation_count": 24,
+    "validation_method": "chronological holdout (last 20%), one-step rolling prediction",
+    "validation_start": "2026-11-08T07:15:00+00:00",
+    "validation_end": "2026-11-08T07:21:00+00:00",
+    "metrics": {
+      "persistence_baseline": {
+        "mae": 6.6,
+        "rmse": 6.826,
+        "sample_count": 5
+      },
+      "ridge_regression": {
+        "mae": 8.703,
+        "rmse": 9.935,
+        "sample_count": 5
+      }
+    },
+    "validation": [
+      {
+        "recorded_at": "2026-11-08T07:15:00+00:00",
+        "actual": 34.0,
+        "naive": 30.0,
+        "model": 41.33
+      },
+      {
+        "recorded_at": "2026-11-08T07:17:00+00:00",
+        "actual": 43.0,
+        "naive": 34.0,
+        "model": 29.89
+      },
+      {
+        "recorded_at": "2026-11-08T07:18:00+00:00",
+        "actual": 37.0,
+        "naive": 43.0,
+        "model": 32.888
+      },
+      {
+        "recorded_at": "2026-11-08T07:19:00+00:00",
+        "actual": 29.0,
+        "naive": 37.0,
+        "model": 32.513
+      },
+      {
+        "recorded_at": "2026-11-08T07:21:00+00:00",
+        "actual": 23.0,
+        "naive": 29.0,
+        "model": 38.451
+      }
+    ],
+    "next_cycle_forecast": {
+      "estimated_for": "2026-11-08T07:22:00+00:00",
+      "estimated_interval_seconds": 60,
+      "persistence_baseline": 23.0,
+      "ridge_regression": 49.305
+    },
+    "history": [
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T06:41:00+00:00",
+        "captured_at": "2026-11-08T06:50:51.996771+00:00",
+        "measured_vehicles_per_cycle": 32.0,
+        "occupancy_percent": 18.5,
+        "lane_count": 2
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T06:42:00+00:00",
+        "captured_at": "2026-11-08T06:54:17.224390+00:00",
+        "measured_vehicles_per_cycle": 49.0,
+        "occupancy_percent": 26.0,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T06:43:00+00:00",
+        "captured_at": "2026-11-08T06:54:17.224390+00:00",
+        "measured_vehicles_per_cycle": 28.0,
+        "occupancy_percent": 18.7,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T06:45:00+00:00",
+        "captured_at": "2026-11-08T06:54:17.224390+00:00",
+        "measured_vehicles_per_cycle": 32.0,
+        "occupancy_percent": 15.4,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T06:46:00+00:00",
+        "captured_at": "2026-11-08T06:54:17.224390+00:00",
+        "measured_vehicles_per_cycle": 40.0,
+        "occupancy_percent": 14.5,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T06:57:00+00:00",
+        "captured_at": "2026-11-08T07:09:16.898134+00:00",
+        "measured_vehicles_per_cycle": 31.0,
+        "occupancy_percent": 24.0,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T06:58:00+00:00",
+        "captured_at": "2026-11-08T07:09:16.898134+00:00",
+        "measured_vehicles_per_cycle": 36.0,
+        "occupancy_percent": 23.5,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T06:59:00+00:00",
+        "captured_at": "2026-11-08T07:09:16.898134+00:00",
+        "measured_vehicles_per_cycle": 32.0,
+        "occupancy_percent": 17.6,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T07:01:00+00:00",
+        "captured_at": "2026-11-08T07:09:16.898134+00:00",
+        "measured_vehicles_per_cycle": 38.0,
+        "occupancy_percent": 15.1,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T07:02:00+00:00",
+        "captured_at": "2026-11-08T07:12:20.701225+00:00",
+        "measured_vehicles_per_cycle": 35.0,
+        "occupancy_percent": 17.4,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T07:03:00+00:00",
+        "captured_at": "2026-11-08T07:12:20.701225+00:00",
+        "measured_vehicles_per_cycle": 21.0,
+        "occupancy_percent": 10.8,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T07:05:00+00:00",
+        "captured_at": "2026-11-08T07:12:20.701225+00:00",
+        "measured_vehicles_per_cycle": 43.0,
+        "occupancy_percent": 18.6,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T07:06:00+00:00",
+        "captured_at": "2026-11-08T07:12:20.701225+00:00",
+        "measured_vehicles_per_cycle": 31.0,
+        "occupancy_percent": 12.5,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T07:07:00+00:00",
+        "captured_at": "2026-11-08T07:17:26.563985+00:00",
+        "measured_vehicles_per_cycle": 49.0,
+        "occupancy_percent": 28.0,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T07:09:00+00:00",
+        "captured_at": "2026-11-08T07:17:26.563985+00:00",
+        "measured_vehicles_per_cycle": 28.0,
+        "occupancy_percent": 14.2,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T07:10:00+00:00",
+        "captured_at": "2026-11-08T07:17:26.563985+00:00",
+        "measured_vehicles_per_cycle": 46.0,
+        "occupancy_percent": 22.2,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T07:11:00+00:00",
+        "captured_at": "2026-11-08T07:17:26.563985+00:00",
+        "measured_vehicles_per_cycle": 12.0,
+        "occupancy_percent": 12.8,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T07:13:00+00:00",
+        "captured_at": "2026-11-08T07:22:32.491669+00:00",
+        "measured_vehicles_per_cycle": 58.0,
+        "occupancy_percent": 40.4,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T07:14:00+00:00",
+        "captured_at": "2026-11-08T07:22:32.491669+00:00",
+        "measured_vehicles_per_cycle": 30.0,
+        "occupancy_percent": 20.5,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T07:15:00+00:00",
+        "captured_at": "2026-11-08T07:22:32.491669+00:00",
+        "measured_vehicles_per_cycle": 34.0,
+        "occupancy_percent": 13.1,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T07:17:00+00:00",
+        "captured_at": "2026-11-08T07:27:38.373585+00:00",
+        "measured_vehicles_per_cycle": 43.0,
+        "occupancy_percent": 16.5,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T07:18:00+00:00",
+        "captured_at": "2026-11-08T07:27:38.373585+00:00",
+        "measured_vehicles_per_cycle": 37.0,
+        "occupancy_percent": 21.0,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T07:19:00+00:00",
+        "captured_at": "2026-11-08T07:27:38.373585+00:00",
+        "measured_vehicles_per_cycle": 29.0,
+        "occupancy_percent": 14.3,
+        "lane_count": 8
+      },
+      {
+        "site_id": "102",
+        "recorded_at": "2026-11-08T07:21:00+00:00",
+        "captured_at": "2026-11-08T07:27:38.373585+00:00",
+        "measured_vehicles_per_cycle": 23.0,
+        "occupancy_percent": 10.6,
+        "lane_count": 8
+      }
+    ],
+    "model": {
+      "name": "Ridge-regularized linear regression",
+      "features": [
+        "previous cycle count (lag 1)",
+        "previous cycle count (lag 2)",
+        "previous cycle count (lag 3)",
+        "hour of day sine",
+        "hour of day cosine"
+      ],
+      "regularization": 0.01
+    }
+  }
+}

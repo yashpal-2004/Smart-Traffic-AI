@@ -36,9 +36,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1794120922.7114863,
-    "seen": 1794120932.983847,
-    "ast_hash": "e6e98fba17a0fd5aced589393dc2dbcd",
+    "mtime": 1794122998.8257287,
+    "seen": 1794123043.2644281,
+    "ast_hash": "53325db47a25a90c32c82dc77cc9a91b",
     "semantic_hash": ""
   },
   "backend/README.md": {
@@ -60,15 +60,15 @@
     "semantic_hash": ""
   },
   "docs/02-TECHNICAL-ARCHITECTURE.md": {
-    "mtime": 1794120922.7128744,
-    "seen": 1794120932.983853,
-    "ast_hash": "745ac4ee0953883e6afbbf0cdc1f0c20",
+    "mtime": 1794122998.8264577,
+    "seen": 1794123043.264435,
+    "ast_hash": "ec642abe126f36a565251feaeed4d2ff",
     "semantic_hash": ""
   },
   "docs/03-MILESTONES.md": {
-    "mtime": 1794120643.8436887,
-    "seen": 1794120694.263167,
-    "ast_hash": "731b27f9116ec1bb32bb6a210a4d5838",
+    "mtime": 1794122998.823833,
+    "seen": 1794123043.264436,
+    "ast_hash": "20e6409977efe1e13a7acfc06fc2acb9",
     "semantic_hash": ""
   },
   "docs/04-AGENT-HANDOFF.md": {
@@ -78,9 +78,9 @@
     "semantic_hash": ""
   },
   "docs/05-DECISIONS-AND-PROGRESS.md": {
-    "mtime": 1794120928.9174361,
-    "seen": 1794120932.983857,
-    "ast_hash": "0f6cad7257897c25086170b1d150f4ef",
+    "mtime": 1794122998.8251219,
+    "seen": 1794123043.264439,
+    "ast_hash": "d3494fa80a08d7d742c1dd1f3866a4df",
     "semantic_hash": ""
   },
   "backend/app/agents/q_learning.py": {
@@ -219,6 +219,12 @@
     "mtime": 1794120813.0928686,
     "seen": 1794120932.983835,
     "ast_hash": "23e4135b474357786b863ae559b84123",
+    "semantic_hash": ""
+  },
+  "docs/sample-evaluation/traffic-forecast-site-102.json": {
+    "mtime": 1794122961.0558386,
+    "seen": 1794123043.264425,
+    "ast_hash": "112a447d3c3b842539922b3cfb9aecb6",
     "semantic_hash": ""
   }
 }

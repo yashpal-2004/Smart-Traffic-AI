@@ -1,7 +1,7 @@
 # Graph Report - Smart-Traffic-AI  (2026-11-08)
 
 ## Corpus Check
-- 33 files · ~17,828 words
+- 34 files · ~18,399 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 3 file(s) not represented in the graph (top: (none) 1, .csv 1, .css 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `b231485a`
+- Built from commit: `0c6d95d6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -41,10 +41,10 @@
 10. `run_episode()` - 13 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `FixedTimeController` --uses--> `Phase`  [INFERRED]
-  backend/app/agents/fixed_time.py → backend/app/simulator/environment.py
 - `SimulatorTests` --uses--> `Approach`  [INFERRED]
   backend/tests/test_simulator.py → backend/app/simulator/environment.py
+- `FixedTimeController` --uses--> `Phase`  [INFERRED]
+  backend/app/agents/fixed_time.py → backend/app/simulator/environment.py
 - `SimulatorTests` --uses--> `Phase`  [INFERRED]
   backend/tests/test_simulator.py → backend/app/simulator/environment.py
 - `QLearningTests` --uses--> `DurationQLearningAgent`  [INFERRED]
