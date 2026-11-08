@@ -31,9 +31,9 @@ class Scenario:
             raise ValueError("arrival rates must be probabilities between 0 and 1")
 
 
-BALANCED = Scenario("balanced", {a: .25 for a in Approach})
-RUSH_HOUR = Scenario("rush_hour", {a: .65 for a in Approach})
-NORTH_SURGE = Scenario("north_surge", {Approach.NORTH: .8, Approach.EAST: .2, Approach.SOUTH: .2, Approach.WEST: .2})
+BALANCED = Scenario("balanced", {a: .20 for a in Approach})
+RUSH_HOUR = Scenario("rush_hour", {a: .40 for a in Approach})
+NORTH_SURGE = Scenario("north_surge", {Approach.NORTH: .45, Approach.EAST: .15, Approach.SOUTH: .2, Approach.WEST: .15})
 SCENARIOS = {s.name: s for s in (BALANCED, RUSH_HOUR, NORTH_SURGE)}
 
 

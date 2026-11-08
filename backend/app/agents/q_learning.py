@@ -26,7 +26,7 @@ class QLearningAgent:
     discount: float = 0.95
     epsilon: float = 1.0
     epsilon_min: float = 0.0
-    epsilon_decay: float = 0.995
+    epsilon_decay: float = 0.98
     q_values: dict[State, list[float]] = field(default_factory=dict)
     _rng: random.Random = field(default_factory=lambda: random.Random(0), repr=False)
 

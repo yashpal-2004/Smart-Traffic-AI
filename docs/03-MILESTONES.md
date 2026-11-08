@@ -24,15 +24,15 @@ Status key: `NOT STARTED`, `IN PROGRESS`, `BLOCKED`, `DONE`.
 - [x] Reserve held-out seeds; reward tuning remains future work.
 **Acceptance:** results exportable; no cherry-picked single-run claims; README includes limitations and actual measured results.
 
-## M4 — Backend API (NOT STARTED)
-- [ ] Create run/step/control/evaluation endpoints and schema validation.
-- [ ] Add clear error responses and persistence strategy (in-memory first).
+## M4 — Backend API (IN PROGRESS)
+- [x] Create run/step/control/evaluation endpoints and schema validation.
+- [x] Add clear error responses and in-memory run state.
 **Acceptance:** API can drive a complete deterministic run and return metrics; API docs reflect actual behavior.
 
-## M5 — Premium frontend (NOT STARTED)
-- [ ] Build responsive Simulate, Compare, Learn, About pages.
-- [ ] Add intersection visualization, run controls, metric cards, charts, educational explanations.
-- [ ] Add loading/empty/error/completed states, keyboard access, reduced motion.
+## M5 — Premium frontend (IN PROGRESS)
+- [x] Build responsive Simulate, Compare, Learn pages.
+- [x] Add intersection visualization, run controls, metric cards, controller comparison, educational explanations.
+- [x] Add empty/error handling, keyboard-operable controls, reduced motion.
 **Acceptance:** core workflow usable without reading source; visualization agrees with backend snapshots; no placeholder metrics.
 
 ## M6 — Polish and release (NOT STARTED)

@@ -1,0 +1,112 @@
+const API = window.TRAFFIC_API_URL || 'http://127.0.0.1:8000/api';
+const $ = (id) => document.getElementById(id);
+let runId = null;
+let timer = null;
+let snapshot = null;
+let episode = 0;
+let seed = Math.floor(Math.random() * 9000) + 1000;
+
+function toast(message) {
+  const node = $('toast'); node.textContent = message; node.classList.add('show');
+  setTimeout(() => node.classList.remove('show'), 2600);
+}
+async function request(path, options = {}) {
+  const response = await fetch(`${API}${path}`, { headers: {'Content-Type':'application/json'}, ...options });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.detail || `Request failed (${response.status})`);
+  }
+  return response.json();
+}
+function showSnapshot(data) {
+  snapshot = data;
+  for (const direction of ['north','east','south','west']) {
+    const count = data.queues[direction] || 0;
+    $(`queue-${direction}`).textContent = count;
+    $(`load-${direction}`).textContent = count;
+    $(`bar-${direction}`).style.width = `${Math.min(100, count * 8)}%`;
+    drawCars(direction, count);
+  }
+  const total = Object.values(data.queues).reduce((a,b)=>a+b,0);
+  $('served-metric').textContent = data.served;
+  $('wait-metric').textContent = data.average_wait_seconds.toFixed(1);
+  $('queue-metric').textContent = total;
+  $('peak-metric').textContent = data.max_queue;
+  $('sim-time').textContent = `${String(Math.floor(data.time/60)).padStart(2,'0')}:${String(data.time%60).padStart(2,'0')}`;
+  $('phase-duration').textContent = `${data.phase_elapsed}s`;
+  $('phase-label').textContent = phaseName(data.phase);
+  $('decision-phase').textContent = phaseName(data.phase);
+  $('seed-label').textContent = seed;
+  $('episode-number').textContent = String(episode).padStart(3,'0');
+  const ns = data.phase === 'north_south';
+  document.querySelectorAll('#signal-ns .lamp').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('#signal-ew .lamp').forEach(x=>x.classList.remove('on'));
+  const active = data.transitioning ? 'amber' : 'green';
+  const other = data.transitioning ? 'amber' : 'red';
+  document.querySelector(`#signal-ns .lamp.${ns ? active : other}`).classList.add('on');
+  document.querySelector(`#signal-ew .lamp.${ns ? other : active}`).classList.add('on');
+  $('phase-arrows').textContent = ns ? '↕' : '↔';
+  $('decision-note').textContent = data.transitioning ? 'Amber transition · vehicles stopped' : 'Serving active approaches';
+  $('policy-name').textContent = data.controller === 'fixed_time' ? 'Fixed-time baseline' : 'Q-learning agent';
+  $('policy-desc').textContent = data.controller === 'fixed_time' ? 'Cycles between phases on a fixed schedule.' : 'Chooses to hold or switch using its learned Q-table.';
+  $('run-state').classList.toggle('running', !data.paused);
+  $('run-state').innerHTML = `<i></i> ${data.paused ? 'PAUSED' : 'RUNNING'}`;
+  $('run-button').innerHTML = data.paused ? '<span class="play-icon">▶</span> Resume simulation' : '<span>Ⅱ</span> Pause simulation';
+  $('served-progress').style.width = `${Math.min(100, data.served / 3)}%`;
+}
+function phaseName(phase) { return phase === 'north_south' ? 'North ↔ South' : 'East ↔ West'; }
+function drawCars(direction, count) {
+  const group = $(`cars-${direction}`); group.replaceChildren();
+  const colors = ['#53d4b1','#79a9ef','#e9b45f','#df8291','#b89aed'];
+  const positions = {
+    north: i => [275 + (i%2)*24, 14 + Math.floor(i/2)*24, 15, 24],
+    south: i => [330 - (i%2)*24, 402 - Math.floor(i/2)*24, 15, 24],
+    west: i => [8 + Math.floor(i/2)*25, 180 + (i%2)*26, 24, 15],
+    east: i => [588 - Math.floor(i/2)*25, 225 - (i%2)*26, 24, 15]
+  };
+  for(let i=0;i<Math.min(count,12);i++){
+    const [x,y,w,h]=positions[direction](i); const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',x);rect.setAttribute('y',y);rect.setAttribute('width',w);rect.setAttribute('height',h);rect.setAttribute('rx','4');rect.setAttribute('class','car');rect.setAttribute('fill',colors[i%colors.length]);group.append(rect);
+  }
+}
+async function createRun() {
+  stopTimer();
+  seed = Math.floor(Math.random() * 9000) + 1000;
+  episode++;
+  const data = await request('/runs',{method:'POST',body:JSON.stringify({scenario:$('scenario').value,controller:$('controller').value,seed})});
+  runId=data.id;showSnapshot(data);
+}
+async function doStep(steps=1) {
+  if(!runId) await createRun();
+  const data=await request(`/runs/${runId}/step`,{method:'POST',body:JSON.stringify({steps})});showSnapshot(data);
+}
+function stopTimer(){if(timer){clearInterval(timer);timer=null}}
+async function runLoop(){
+  if(!runId) await createRun();
+  if(snapshot?.paused){const data=await request(`/runs/${runId}/control/resume`,{method:'POST'});showSnapshot(data)}
+  stopTimer();timer=setInterval(()=>doStep(1).catch(e=>{stopTimer();toast(e.message)}),180);
+}
+async function pause(){stopTimer();if(runId){const data=await request(`/runs/${runId}/control/pause`,{method:'POST'});showSnapshot(data)}}
+$('run-button').addEventListener('click',()=> (snapshot&&!snapshot.paused ? pause():runLoop()).catch(e=>toast(e.message)));
+$('step-button').addEventListener('click',()=>doStep().catch(e=>toast(e.message)));
+$('reset-button').addEventListener('click',async()=>{stopTimer();try{if(!runId)await createRun();const data=await request(`/runs/${runId}/control/reset`,{method:'POST'});showSnapshot(data)}catch(e){toast(e.message)}});
+$('scenario').addEventListener('change',()=>createRun().catch(e=>toast(e.message)));
+$('controller').addEventListener('change',()=>createRun().catch(e=>toast(e.message)));
+$('compare-button').addEventListener('click',async()=>{
+  const selected=[...$('compare-scenarios').selectedOptions].map(o=>o.value);
+  $('compare-button').disabled=true;$('compare-button').textContent='Evaluating…';
+  try{const report=await request('/evaluations',{method:'POST',body:JSON.stringify({scenarios:selected,seeds:[101,202,303],steps:Number($('compare-steps').value)})});renderReport(report)}catch(e){toast(e.message)}finally{$('compare-button').disabled=false;$('compare-button').textContent='Run evaluation'}
+});
+function renderReport(report){
+ const target=$('compare-results');target.replaceChildren();const grid=document.createElement('div');grid.className='results-grid';
+ for(const [name,m] of Object.entries(report.summary)){const col=document.createElement('article');col.className='result-column';const title=document.createElement('h3');title.textContent=name==='fixed_time'?'Fixed-time baseline':'Q-learning agent';col.append(title);
+  const rows=[['Mean served wait',`${m.average_wait_seconds.mean.toFixed(2)} s`],['Median served wait',`${m.average_wait_seconds.median.toFixed(2)} s`],['Mean queue length',m.average_queue_length.mean.toFixed(2)],['Mean vehicles served',m.vehicles_served.mean.toFixed(1)],['Episodes',m.sample_count]];
+  rows.forEach(([label,value])=>{const row=document.createElement('div');row.className='result-value';const l=document.createElement('span');l.textContent=label;const v=document.createElement('b');v.textContent=value;row.append(l,v);col.append(row)});grid.append(col)}
+ target.append(grid);const note=document.createElement('p');note.className='compare-note';note.textContent=`Matched seeds: ${report.protocol.paired_seeds.join(', ')} · ${report.protocol.steps_per_episode} steps each. ${report.protocol.wait_definition}.`;target.append(note)
+}
+document.querySelectorAll('.nav-item').forEach(button=>button.addEventListener('click',()=>{
+ document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x===button));
+ document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));
+ const page=button.dataset.page;$(`${page}-page`).classList.remove('hidden');$('page-title').textContent=page[0].toUpperCase()+page.slice(1);
+}));
+$('api-status').classList.add('offline');request('/health').then(()=>{$('api-status').classList.remove('offline');$('api-status').innerHTML='<i></i> API ONLINE';return createRun()}).catch(()=>{$('api-status').classList.add('offline');$('api-status').innerHTML='<i></i> API OFFLINE';toast('Start the backend API to connect the simulation.')});

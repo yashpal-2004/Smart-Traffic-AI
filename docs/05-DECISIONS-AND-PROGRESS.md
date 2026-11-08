@@ -39,3 +39,13 @@
 - Observed result for this smoke experiment only: across 3 scenarios × 5 held-out seeds (15 episodes/controller), fixed-time mean served wait was 22.58s, mean queue 44.74 and mean served 248.5; Q-learning was 24.75s, 54.66 and 225.3. This trained policy did worse; do not claim improvement.
 - Known limitations: 100 episodes × 200 steps is a smoke run, not robust model selection; demand rates may exceed the single-lane service capacity, making queues grow.
 - Next exact step: inspect reward and demand/service design, then run longer training and report whether policy improves against fixed-time before building the API/UI.
+
+
+### 2026-11-08 — M3 demand review, M4 API, M5 visual dashboard
+- Status: API and initial visual interface implemented; M3 model quality remains in progress; M5 polish/accessibility acceptance still needs review.
+- Changed: added FastAPI routes for scenarios, run lifecycle, stepping and evaluation; added CORS for local UI; added a responsive dark control-room dashboard with live intersection, metrics, controller selection, comparison and learn pages.
+- Demand decision: rates are below nominal single-lane per-approach service capacity to make queues stable enough for controller comparison (balanced .20, rush .40, north surge [.45,.15,.20,.15]).
+- Verification: 15 backend tests pass; frontend connected to API in browser, and run control advanced sim clock. End-to-end 1,000-episode × 500-step train/evaluation gave fixed-time mean wait 11.29s, queue 12.71, served 535.4; Q-learning mean wait 17.37s, queue 21.59, served 513.0 over 15 held-out episodes per controller. Learned policy still underperforms; results are not presented as an improvement.
+- Local run: `pip install -r backend/requirements.txt && PYTHONPATH=backend uvicorn app.main:app --app-dir backend --reload`; separate terminal `python3 -m http.server 4173 --bind 127.0.0.1 --directory frontend`.
+- Known limitations: Q-learning control is not competitive yet; UI comparison uses an untrained in-memory table unless a checkpoint path is later wired; runs are process-local; UI uses inline SVG and basic summaries rather than time-series charts.
+- Next exact step: investigate Q-learning reward/state/action behavior and load trained checkpoint for comparison; then add chart history and finish M3/M5 acceptance review.
