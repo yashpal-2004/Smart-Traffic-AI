@@ -41,6 +41,7 @@ On a clean clone, both Q-learning policies start untrained. Open **Compare**, ch
 
 - **Simulate:** run, pause, step, and reset seeded traffic; inspect queues, phase, wait, throughput, and controller decisions.
 - **Compare:** evaluate fixed-time, hold/switch Q-learning, and green-duration Q-learning on the same selected scenarios and seeds. Review per-seed deltas, scenario summaries, and uncertainty intervals.
+- **SUMO evaluation:** train the existing hold/switch agent in a separate Eclipse SUMO four-way junction and compare it with fixed-time control using paired seeds.
 - **Learn:** read the simulator's state, actions, reward choices, and limitations.
 - **Export:** download complete evaluation reports as JSON or typed-row CSV. Reports include seed protocol, configuration, scenario arrival rates, checkpoint fingerprints, and source revision metadata.
 
@@ -77,6 +78,17 @@ Metric definitions: served wait is average queueing time for vehicles served dur
 ![Signal Lab component architecture](docs/architecture-light.svg)
 
 The simulator and policies are independent of the web layer. The browser sends JSON to FastAPI; the API runs the same deterministic simulator for live runs and matched-seed evaluation. See [the architecture notes](docs/02-TECHNICAL-ARCHITECTURE.md) for endpoint and persistence details.
+
+### Run the SUMO-backed comparison
+
+The browser app keeps using the lightweight Python simulator. SUMO is an optional, separate evaluation backend. Install Eclipse SUMO and its TraCI Python bindings, with `sumo` and `netconvert` available on `PATH`, then install the project extra:
+
+```bash
+python3 -m pip install -r backend/requirements-sumo.txt
+PYTHONPATH=backend python3 backend/scripts/run_sumo_evaluation.py --episodes 100 --steps 500 --seeds 101 202 303 404 505
+```
+
+The runner builds a four-way, single-lane signalized network from the checked-in SUMO node, edge, and connection files. It trains on separate generated seeds and evaluates fixed-time and Q-learning controllers on the same scenario/seed pairs. The JSON report and learned SUMO Q-table are written under `backend/artifacts/` (ignored by Git). SUMO runs are educational experiments; compare results with identical SUMO versions and settings.
 
 ## Repository map
 

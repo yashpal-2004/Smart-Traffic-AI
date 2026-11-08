@@ -1,0 +1,6 @@
+<configuration>
+  <input><net-file value="traffic.net.xml"/><route-files value="demand.rou.xml"/></input>
+  <time><begin value="0"/><step-length value="1"/></time>
+  <processing><ignore-route-errors value="false"/></processing>
+  <report><no-step-log value="true"/><duration-log.disable value="true"/></report>
+</configuration>

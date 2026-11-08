@@ -36,9 +36,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1794125588.1801245,
-    "seen": 1794125589.135009,
-    "ast_hash": "c780c92150c36dd2e1e40428172175cc",
+    "mtime": 1794126482.662143,
+    "seen": 1794126499.07889,
+    "ast_hash": "39b4af026cc30e3fb31b22c29d5d2e0d",
     "semantic_hash": ""
   },
   "backend/README.md": {
@@ -60,9 +60,9 @@
     "semantic_hash": ""
   },
   "docs/02-TECHNICAL-ARCHITECTURE.md": {
-    "mtime": 1794122998.8264577,
-    "seen": 1794123043.264435,
-    "ast_hash": "ec642abe126f36a565251feaeed4d2ff",
+    "mtime": 1794126483.3902755,
+    "seen": 1794126499.078898,
+    "ast_hash": "ad1c868768cdcd73d53198dd4ad1e07e",
     "semantic_hash": ""
   },
   "backend/app/agents/q_learning.py": {
@@ -207,6 +207,24 @@
     "mtime": 1794125285.841765,
     "seen": 1794125286.634811,
     "ast_hash": "8f6da23aa96b963da473e21463668d7d",
+    "semantic_hash": ""
+  },
+  "backend/app/simulator/sumo/environment.py": {
+    "mtime": 1794126466.1948502,
+    "seen": 1794126499.07887,
+    "ast_hash": "ffa95bf249aebacf23476bc633e7b3c8",
+    "semantic_hash": ""
+  },
+  "backend/scripts/run_sumo_evaluation.py": {
+    "mtime": 1794126392.992817,
+    "seen": 1794126499.078878,
+    "ast_hash": "9ba09af0c725375182a49fe2007bc62c",
+    "semantic_hash": ""
+  },
+  "backend/requirements-sumo.txt": {
+    "mtime": 1794126238.7487435,
+    "seen": 1794126499.078893,
+    "ast_hash": "57db1ee6e12feb2fdd48023accd18e5c",
     "semantic_hash": ""
   }
 }
