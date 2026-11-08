@@ -78,9 +78,9 @@
     "semantic_hash": ""
   },
   "docs/05-DECISIONS-AND-PROGRESS.md": {
-    "mtime": 1794117907.545132,
-    "seen": 1794117908.558975,
-    "ast_hash": "f4a43638a6565c75c20f91121e7c4647",
+    "mtime": 1794118048.149816,
+    "seen": 1794118049.409297,
+    "ast_hash": "13f070dd9f3250d2b5e9b7818e76e9b6",
     "semantic_hash": ""
   },
   "backend/app/agents/q_learning.py": {
@@ -102,9 +102,9 @@
     "semantic_hash": ""
   },
   "backend/app/evaluation/runner.py": {
-    "mtime": 1794117877.5845087,
-    "seen": 1794117908.558948,
-    "ast_hash": "4f9ff39331bbad130e5f64e765ad9dd2",
+    "mtime": 1794118011.1400473,
+    "seen": 1794118049.409271,
+    "ast_hash": "3d0789923c6d8ef15b080aac74355dad",
     "semantic_hash": ""
   },
   "backend/scripts/train_and_evaluate.py": {
@@ -144,9 +144,9 @@
     "semantic_hash": ""
   },
   "frontend/app.js": {
-    "mtime": 1794117892.1359968,
-    "seen": 1794117908.558963,
-    "ast_hash": "940a5819da5423305b44e148aa46733e",
+    "mtime": 1794118039.3164365,
+    "seen": 1794118049.409285,
+    "ast_hash": "e2ac7b39f2e052c50c77b00958b86608",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {

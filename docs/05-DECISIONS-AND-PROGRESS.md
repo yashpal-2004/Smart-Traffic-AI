@@ -127,3 +127,12 @@
 - Method: intervals use the sample standard deviation of paired differences and a t critical value through 30 observations, then 1.96 for larger samples. Values are rounded to three decimals.
 - Known limitation: pooled intervals combine scenarios and assume independent paired differences with an approximately normal mean; small seed counts produce wide, unstable intervals and should be interpreted cautiously.
 - Next exact step: inspect interval behavior across larger seed counts, document sample-size sensitivity, and add scenario-specific paired summaries.
+
+
+### 2026-11-08 — Scenario-specific paired summaries
+- Status: implemented and browser-verified.
+- Changed: evaluation now reports paired mean differences and wait-improvement counts separately for each selected traffic scenario, in addition to the pooled summary. The dashboard labels each scenario group and shows its seed sample count in the win-count denominator.
+- Accuracy fix: confidence intervals are unavailable when a group has only one paired sample; the UI labels that case instead of presenting a zero-width interval.
+- Verification: a live 2-seed, 3-scenario evaluation rendered all three scenario groups, six policy cards, and 12 per-seed delta rows. The two-seed t intervals are visibly wide, as expected.
+- Known limitation: scenario-level intervals can be unstable at low seed counts; the pooled interval still combines scenarios and is shown separately.
+- Next exact step: export the paired summaries and interval method with the episode CSV, and add a clearer experiment protocol section.

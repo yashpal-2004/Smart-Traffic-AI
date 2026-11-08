@@ -28,12 +28,14 @@ def paired_delta_summary(deltas: list[dict]) -> dict:
             values = [row[key] for row in rows]
             avg = mean(values)
             if len(values) < 2:
-                low = high = avg
+                low = high = None
             else:
                 critical = t_critical[len(values) - 1] if len(values) <= 30 else 1.96
                 margin = critical * stdev(values) / len(values) ** 0.5
                 low, high = avg - margin, avg + margin
-            metrics[key] = {"mean": round(avg, 3), "ci95_low": round(low, 3), "ci95_high": round(high, 3)}
+            metrics[key] = {"mean": round(avg, 3),
+                            "ci95_low": round(low, 3) if low is not None else None,
+                            "ci95_high": round(high, 3) if high is not None else None}
         wait_values = [row["wait_seconds"] for row in rows]
         metrics["wait_improvements"] = sum(value < 0 for value in wait_values)
         metrics["wait_ties"] = sum(value == 0 for value in wait_values)
@@ -142,6 +144,10 @@ def evaluate(scenarios: list[Scenario], seeds: list[int], steps: int, config: Si
                     "queue_length": round(candidate.average_queue_length - baseline.average_queue_length, 3),
                     "vehicles_served": candidate.served - baseline.served,
                 })
+    scenario_summaries = {
+        scenario.name: paired_delta_summary([row for row in paired_deltas if row["scenario"] == scenario.name])
+        for scenario in scenarios
+    }
     return {"protocol": {"paired_seeds": seeds, "steps_per_episode": steps,
                           "scenarios": [s.name for s in scenarios],
                           "wait_definition": "mean queueing seconds among vehicles served during the episode",
@@ -151,6 +157,7 @@ def evaluate(scenarios: list[Scenario], seeds: list[int], steps: int, config: Si
             "summary": summarize(results),
             "paired_deltas_vs_fixed_time": paired_deltas,
             "paired_summary_vs_fixed_time": paired_delta_summary(paired_deltas),
+            "paired_summary_by_scenario": scenario_summaries,
             "episodes": [asdict(row) for row in results]}
 
 
