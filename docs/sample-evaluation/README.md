@@ -2,6 +2,7 @@
 
 - `sample-evaluation.json` is the complete API report, including protocol, source/configuration metadata, checkpoint hashes, episode records, paired deltas, and intervals.
 - `sample-evaluation.csv` contains the same report as typed rows (`protocol`, `controller_summary`, `paired_summary_pooled`, `paired_summary_scenario`, `paired_delta`, and `episode`). Episode objects are stored as JSON in `details_json`.
+- `sumo-evaluation-100-500.json` is the complete report from a separate SUMO run: 100 training episodes, 500 steps per episode, and 15 matched evaluation pairs.
 
 Protocol: 500 simulation steps, seeds 101/202/303/404/505, and balanced, rush-hour, and northbound-surge scenarios. The controller summaries contain 15 matched scenario/seed episodes per controller. Report ID, generation time, source revision, and local Q-table fingerprints are embedded in the JSON and protocol rows.
 

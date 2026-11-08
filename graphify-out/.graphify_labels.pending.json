@@ -2,7 +2,6 @@
   "0": "QLearningAgent",
   "1": "traffic_history.py",
   "2": "run_sumo_evaluation.py",
-  "3": "sample-evaluation/README.md",
   "4": "Milestones and Acceptance Checks",
   "5": "ApiTests",
   "6": "routes.py",

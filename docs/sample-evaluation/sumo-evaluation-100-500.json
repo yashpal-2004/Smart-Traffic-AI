@@ -1,0 +1,566 @@
+{
+  "protocol": {
+    "simulator": "Eclipse SUMO via TraCI",
+    "paired_seeds": [
+      101,
+      202,
+      303,
+      404,
+      505
+    ],
+    "steps_per_episode": 500,
+    "training_episodes": 100,
+    "scenarios": [
+      "balanced",
+      "rush_hour",
+      "north_surge"
+    ],
+    "training_data_excluded": true,
+    "wait_definition": "Mean accumulated vehicle waiting time among vehicles arriving at their destination.",
+    "queue_definition": "Mean halted vehicles counted across the four inbound lanes per simulation step."
+  },
+  "summary": {
+    "fixed_time": {
+      "sample_count": 15,
+      "average_wait_seconds": {
+        "mean": 58.33440817801853,
+        "median": 56.164556962025316,
+        "population_stddev": 9.944934001392797
+      },
+      "average_queue_length": {
+        "mean": 34.5456,
+        "median": 32.712,
+        "population_stddev": 5.424906669550485
+      },
+      "vehicles_served": {
+        "mean": 156.4,
+        "median": 156,
+        "population_stddev": 3.22076595444831
+      }
+    },
+    "q_learning": {
+      "sample_count": 15,
+      "average_wait_seconds": {
+        "mean": 17.592182796115893,
+        "median": 17.52173913043478,
+        "population_stddev": 2.1263459431853478
+      },
+      "average_queue_length": {
+        "mean": 7.650133333333334,
+        "median": 7.466,
+        "population_stddev": 0.9203061712761079
+      },
+      "vehicles_served": {
+        "mean": 179.4,
+        "median": 180,
+        "population_stddev": 3.006659275674582
+      }
+    }
+  },
+  "paired_deltas_vs_fixed_time": [
+    {
+      "scenario": "balanced",
+      "seed": 101,
+      "controller": "q_learning",
+      "wait_seconds": -32.777,
+      "queue_length": -23.236,
+      "vehicles_served": 17
+    },
+    {
+      "scenario": "balanced",
+      "seed": 202,
+      "controller": "q_learning",
+      "wait_seconds": -36.116,
+      "queue_length": -25.248,
+      "vehicles_served": 25
+    },
+    {
+      "scenario": "balanced",
+      "seed": 303,
+      "controller": "q_learning",
+      "wait_seconds": -40.085,
+      "queue_length": -27.774,
+      "vehicles_served": 16
+    },
+    {
+      "scenario": "balanced",
+      "seed": 404,
+      "controller": "q_learning",
+      "wait_seconds": -32.424,
+      "queue_length": -23.984,
+      "vehicles_served": 25
+    },
+    {
+      "scenario": "balanced",
+      "seed": 505,
+      "controller": "q_learning",
+      "wait_seconds": -39.437,
+      "queue_length": -25.996,
+      "vehicles_served": 22
+    },
+    {
+      "scenario": "rush_hour",
+      "seed": 101,
+      "controller": "q_learning",
+      "wait_seconds": -45.348,
+      "queue_length": -32.076,
+      "vehicles_served": 20
+    },
+    {
+      "scenario": "rush_hour",
+      "seed": 202,
+      "controller": "q_learning",
+      "wait_seconds": -54.231,
+      "queue_length": -34.172,
+      "vehicles_served": 29
+    },
+    {
+      "scenario": "rush_hour",
+      "seed": 303,
+      "controller": "q_learning",
+      "wait_seconds": -53.736,
+      "queue_length": -33.846,
+      "vehicles_served": 25
+    },
+    {
+      "scenario": "rush_hour",
+      "seed": 404,
+      "controller": "q_learning",
+      "wait_seconds": -51.248,
+      "queue_length": -33.154,
+      "vehicles_served": 26
+    },
+    {
+      "scenario": "rush_hour",
+      "seed": 505,
+      "controller": "q_learning",
+      "wait_seconds": -56.344,
+      "queue_length": -34.016,
+      "vehicles_served": 29
+    },
+    {
+      "scenario": "north_surge",
+      "seed": 101,
+      "controller": "q_learning",
+      "wait_seconds": -25.791,
+      "queue_length": -20.156,
+      "vehicles_served": 21
+    },
+    {
+      "scenario": "north_surge",
+      "seed": 202,
+      "controller": "q_learning",
+      "wait_seconds": -34.834,
+      "queue_length": -21.662,
+      "vehicles_served": 27
+    },
+    {
+      "scenario": "north_surge",
+      "seed": 303,
+      "controller": "q_learning",
+      "wait_seconds": -38.695,
+      "queue_length": -23.976,
+      "vehicles_served": 20
+    },
+    {
+      "scenario": "north_surge",
+      "seed": 404,
+      "controller": "q_learning",
+      "wait_seconds": -33.722,
+      "queue_length": -21.856,
+      "vehicles_served": 21
+    },
+    {
+      "scenario": "north_surge",
+      "seed": 505,
+      "controller": "q_learning",
+      "wait_seconds": -36.345,
+      "queue_length": -22.28,
+      "vehicles_served": 22
+    }
+  ],
+  "paired_summary_vs_fixed_time": {
+    "q_learning": {
+      "wait_seconds": {
+        "mean": -40.742,
+        "ci95_low": -45.898,
+        "ci95_high": -35.587
+      },
+      "queue_length": {
+        "mean": -26.895,
+        "ci95_low": -29.751,
+        "ci95_high": -24.04
+      },
+      "vehicles_served": {
+        "mean": 23,
+        "ci95_low": 20.795,
+        "ci95_high": 25.205
+      },
+      "wait_improvements": 15,
+      "wait_ties": 0,
+      "sample_count": 15
+    }
+  },
+  "episodes": [
+    {
+      "controller": "fixed_time",
+      "scenario": "balanced",
+      "seed": 101,
+      "steps": 500,
+      "arrived": 303,
+      "served": 156,
+      "average_wait_seconds": 53.256410256410255,
+      "average_queue_length": 32.232,
+      "max_queue": 55,
+      "total_wait_seconds": 16116
+    },
+    {
+      "controller": "q_learning",
+      "scenario": "balanced",
+      "seed": 101,
+      "steps": 500,
+      "arrived": 320,
+      "served": 173,
+      "average_wait_seconds": 20.479768786127167,
+      "average_queue_length": 8.996,
+      "max_queue": 18,
+      "total_wait_seconds": 4498
+    },
+    {
+      "controller": "fixed_time",
+      "scenario": "balanced",
+      "seed": 202,
+      "steps": 500,
+      "arrived": 298,
+      "served": 151,
+      "average_wait_seconds": 52.258278145695364,
+      "average_queue_length": 32.15,
+      "max_queue": 58,
+      "total_wait_seconds": 16075
+    },
+    {
+      "controller": "q_learning",
+      "scenario": "balanced",
+      "seed": 202,
+      "steps": 500,
+      "arrived": 322,
+      "served": 176,
+      "average_wait_seconds": 16.142045454545453,
+      "average_queue_length": 6.902,
+      "max_queue": 16,
+      "total_wait_seconds": 3451
+    },
+    {
+      "controller": "fixed_time",
+      "scenario": "balanced",
+      "seed": 303,
+      "steps": 500,
+      "arrived": 309,
+      "served": 162,
+      "average_wait_seconds": 57.00617283950617,
+      "average_queue_length": 34.714,
+      "max_queue": 53,
+      "total_wait_seconds": 17357
+    },
+    {
+      "controller": "q_learning",
+      "scenario": "balanced",
+      "seed": 303,
+      "steps": 500,
+      "arrived": 325,
+      "served": 178,
+      "average_wait_seconds": 16.921348314606742,
+      "average_queue_length": 6.94,
+      "max_queue": 18,
+      "total_wait_seconds": 3470
+    },
+    {
+      "controller": "fixed_time",
+      "scenario": "balanced",
+      "seed": 404,
+      "steps": 500,
+      "arrived": 301,
+      "served": 153,
+      "average_wait_seconds": 51.26143790849673,
+      "average_queue_length": 32.712,
+      "max_queue": 60,
+      "total_wait_seconds": 16356
+    },
+    {
+      "controller": "q_learning",
+      "scenario": "balanced",
+      "seed": 404,
+      "steps": 500,
+      "arrived": 323,
+      "served": 178,
+      "average_wait_seconds": 18.837078651685392,
+      "average_queue_length": 8.728,
+      "max_queue": 20,
+      "total_wait_seconds": 4364
+    },
+    {
+      "controller": "fixed_time",
+      "scenario": "balanced",
+      "seed": 505,
+      "steps": 500,
+      "arrived": 306,
+      "served": 158,
+      "average_wait_seconds": 56.164556962025316,
+      "average_queue_length": 33.388,
+      "max_queue": 53,
+      "total_wait_seconds": 16694
+    },
+    {
+      "controller": "q_learning",
+      "scenario": "balanced",
+      "seed": 505,
+      "steps": 500,
+      "arrived": 326,
+      "served": 180,
+      "average_wait_seconds": 16.727777777777778,
+      "average_queue_length": 7.392,
+      "max_queue": 16,
+      "total_wait_seconds": 3696
+    },
+    {
+      "controller": "fixed_time",
+      "scenario": "rush_hour",
+      "seed": 101,
+      "steps": 500,
+      "arrived": 308,
+      "served": 160,
+      "average_wait_seconds": 64.98125,
+      "average_queue_length": 39.88,
+      "max_queue": 57,
+      "total_wait_seconds": 19940
+    },
+    {
+      "controller": "q_learning",
+      "scenario": "rush_hour",
+      "seed": 101,
+      "steps": 500,
+      "arrived": 326,
+      "served": 180,
+      "average_wait_seconds": 19.633333333333333,
+      "average_queue_length": 7.804,
+      "max_queue": 17,
+      "total_wait_seconds": 3902
+    },
+    {
+      "controller": "fixed_time",
+      "scenario": "rush_hour",
+      "seed": 202,
+      "steps": 500,
+      "arrived": 303,
+      "served": 156,
+      "average_wait_seconds": 70.71794871794872,
+      "average_queue_length": 41.582,
+      "max_queue": 58,
+      "total_wait_seconds": 20791
+    },
+    {
+      "controller": "q_learning",
+      "scenario": "rush_hour",
+      "seed": 202,
+      "steps": 500,
+      "arrived": 329,
+      "served": 185,
+      "average_wait_seconds": 16.486486486486488,
+      "average_queue_length": 7.41,
+      "max_queue": 15,
+      "total_wait_seconds": 3705
+    },
+    {
+      "controller": "fixed_time",
+      "scenario": "rush_hour",
+      "seed": 303,
+      "steps": 500,
+      "arrived": 306,
+      "served": 159,
+      "average_wait_seconds": 71.25786163522012,
+      "average_queue_length": 41.86,
+      "max_queue": 58,
+      "total_wait_seconds": 20930
+    },
+    {
+      "controller": "q_learning",
+      "scenario": "rush_hour",
+      "seed": 303,
+      "steps": 500,
+      "arrived": 329,
+      "served": 184,
+      "average_wait_seconds": 17.52173913043478,
+      "average_queue_length": 8.014,
+      "max_queue": 16,
+      "total_wait_seconds": 4007
+    },
+    {
+      "controller": "fixed_time",
+      "scenario": "rush_hour",
+      "seed": 404,
+      "steps": 500,
+      "arrived": 301,
+      "served": 154,
+      "average_wait_seconds": 70.98701298701299,
+      "average_queue_length": 41.554,
+      "max_queue": 57,
+      "total_wait_seconds": 20777
+    },
+    {
+      "controller": "q_learning",
+      "scenario": "rush_hour",
+      "seed": 404,
+      "steps": 500,
+      "arrived": 327,
+      "served": 180,
+      "average_wait_seconds": 19.738888888888887,
+      "average_queue_length": 8.4,
+      "max_queue": 17,
+      "total_wait_seconds": 4200
+    },
+    {
+      "controller": "fixed_time",
+      "scenario": "rush_hour",
+      "seed": 505,
+      "steps": 500,
+      "arrived": 300,
+      "served": 152,
+      "average_wait_seconds": 78.11184210526316,
+      "average_queue_length": 43.398,
+      "max_queue": 58,
+      "total_wait_seconds": 21699
+    },
+    {
+      "controller": "q_learning",
+      "scenario": "rush_hour",
+      "seed": 505,
+      "steps": 500,
+      "arrived": 327,
+      "served": 181,
+      "average_wait_seconds": 21.76795580110497,
+      "average_queue_length": 9.382,
+      "max_queue": 17,
+      "total_wait_seconds": 4691
+    },
+    {
+      "controller": "fixed_time",
+      "scenario": "north_surge",
+      "seed": 101,
+      "steps": 500,
+      "arrived": 295,
+      "served": 156,
+      "average_wait_seconds": 43.71153846153846,
+      "average_queue_length": 27.978,
+      "max_queue": 54,
+      "total_wait_seconds": 13989
+    },
+    {
+      "controller": "q_learning",
+      "scenario": "north_surge",
+      "seed": 101,
+      "steps": 500,
+      "arrived": 311,
+      "served": 177,
+      "average_wait_seconds": 17.92090395480226,
+      "average_queue_length": 7.822,
+      "max_queue": 15,
+      "total_wait_seconds": 3911
+    },
+    {
+      "controller": "fixed_time",
+      "scenario": "north_surge",
+      "seed": 202,
+      "steps": 500,
+      "arrived": 291,
+      "served": 153,
+      "average_wait_seconds": 48.30065359477124,
+      "average_queue_length": 27.526,
+      "max_queue": 51,
+      "total_wait_seconds": 13763
+    },
+    {
+      "controller": "q_learning",
+      "scenario": "north_surge",
+      "seed": 202,
+      "steps": 500,
+      "arrived": 317,
+      "served": 180,
+      "average_wait_seconds": 13.466666666666667,
+      "average_queue_length": 5.864,
+      "max_queue": 16,
+      "total_wait_seconds": 2932
+    },
+    {
+      "controller": "fixed_time",
+      "scenario": "north_surge",
+      "seed": 303,
+      "steps": 500,
+      "arrived": 301,
+      "served": 158,
+      "average_wait_seconds": 56.234177215189874,
+      "average_queue_length": 31.442,
+      "max_queue": 52,
+      "total_wait_seconds": 15721
+    },
+    {
+      "controller": "q_learning",
+      "scenario": "north_surge",
+      "seed": 303,
+      "steps": 500,
+      "arrived": 318,
+      "served": 178,
+      "average_wait_seconds": 17.53932584269663,
+      "average_queue_length": 7.466,
+      "max_queue": 15,
+      "total_wait_seconds": 3733
+    },
+    {
+      "controller": "fixed_time",
+      "scenario": "north_surge",
+      "seed": 404,
+      "steps": 500,
+      "arrived": 302,
+      "served": 157,
+      "average_wait_seconds": 49.12101910828026,
+      "average_queue_length": 28.372,
+      "max_queue": 51,
+      "total_wait_seconds": 14186
+    },
+    {
+      "controller": "q_learning",
+      "scenario": "north_surge",
+      "seed": 404,
+      "steps": 500,
+      "arrived": 325,
+      "served": 178,
+      "average_wait_seconds": 15.398876404494382,
+      "average_queue_length": 6.516,
+      "max_queue": 17,
+      "total_wait_seconds": 3258
+    },
+    {
+      "controller": "fixed_time",
+      "scenario": "north_surge",
+      "seed": 505,
+      "steps": 500,
+      "arrived": 291,
+      "served": 161,
+      "average_wait_seconds": 51.64596273291925,
+      "average_queue_length": 29.396,
+      "max_queue": 51,
+      "total_wait_seconds": 14698
+    },
+    {
+      "controller": "q_learning",
+      "scenario": "north_surge",
+      "seed": 505,
+      "steps": 500,
+      "arrived": 288,
+      "served": 183,
+      "average_wait_seconds": 15.300546448087431,
+      "average_queue_length": 7.116,
+      "max_queue": 14,
+      "total_wait_seconds": 3558
+    }
+  ]
+}

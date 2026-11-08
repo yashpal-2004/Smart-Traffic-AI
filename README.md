@@ -57,6 +57,12 @@ In a controlled run, both tabular learners were trained for 1,500 episodes × 50
 
 The duration policy beat the hold/switch learner in this recorded run, but both learned policies trailed fixed-time. These are results from one simulator configuration and a small held-out set; they are not evidence of real-world performance or a general RL improvement. The JSON and CSV for a reproducible sample run are in [`docs/sample-evaluation/`](docs/sample-evaluation/).
 
+### SUMO evaluation sample
+
+A separate Eclipse SUMO run trained the hold/switch Q-learning agent for 100 episodes × 500 steps, then evaluated it against fixed-time control on three scenarios and five matched seeds (15 pairs, 500 steps per episode). In this run, Q-learning averaged 17.59 seconds of served-vehicle waiting, a 7.65-vehicle queue, and 179.4 vehicles served; fixed-time averaged 58.33 seconds, a 34.55-vehicle queue, and 156.4 vehicles served. The mean paired differences (Q-learning minus fixed-time) were −40.742 seconds of wait (95% CI −45.898 to −35.587), −26.895 vehicles in the queue (95% CI −29.751 to −24.040), and +23.0 vehicles served (95% CI +20.795 to +25.205). Q-learning had lower wait in all 15 pairs.
+
+This is one result from a simplified, single-lane SUMO network and a tabular policy. It does not establish real-world traffic benefits or show that the policy will outperform fixed-time under other network, demand, or SUMO settings. The full [SUMO evaluation JSON](docs/sample-evaluation/sumo-evaluation-100-500.json) records the episode-level results and protocol.
+
 The **City Feed** page also reads live, read-only lane-volume and detector-occupancy measurements from [Brisbane City Council's intersection-volume dataset](https://data.brisbane.qld.gov.au/explore/dataset/traffic-data-at-intersection/) (CC BY 4.0). Flow is reported per signal-controller cycle. The feed is for monitoring and analysis only; it does not control signals or feed the simulator's compass-direction model.
 
 ### Traffic forecasting workflow
