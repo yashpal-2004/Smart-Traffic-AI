@@ -4,7 +4,7 @@ An educational traffic-signal-control lab. Run a four-way intersection, inspect 
 
 > **Simulation only.** This simplified, single-lane model is not suitable for real roads or signal control.
 
-![Signal Lab comparison dashboard](docs/images/signal-lab-compare.png)
+![Signal Lab controller comparison page in the warm beige theme](docs/images/signal-lab-compare.png)
 
 ## Quick start
 
