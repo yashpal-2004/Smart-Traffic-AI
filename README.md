@@ -87,7 +87,7 @@ The simulator and policies are independent of the web layer. The browser sends J
 
 ### Run the SUMO-backed comparison
 
-The **Simulate** page can run the lightweight Python model or the SUMO network. To enable SUMO, install Eclipse SUMO and its TraCI Python bindings, with `sumo` and `netconvert` available on `PATH`, then install the project extra:
+The **Simulate** page can run the lightweight Python model or the SUMO network. In SUMO mode, the dashboard renders SUMO's live vehicle positions and signal states in a web-based network view with a recent signal-phase timeline; the existing Python-model intersection view is used for Python mode. To enable SUMO, install Eclipse SUMO and its TraCI Python bindings, with `sumo` and `netconvert` available on `PATH`, then install the project extra:
 
 ```bash
 python3 -m pip install -r backend/requirements-sumo.txt

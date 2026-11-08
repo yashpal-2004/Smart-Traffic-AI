@@ -22,6 +22,11 @@ async function request(path, options = {}) {
 }
 function showSnapshot(data) {
   snapshot = data;
+  const isSumo = data.engine === 'sumo';
+  $('dashboard-grid').classList.toggle('sumo-mode', isSumo);
+  $('sumo-visualization-card').classList.toggle('hidden', !isSumo);
+  document.querySelector('.intersection-card').classList.toggle('hidden', isSumo);
+  if (isSumo) drawSumoNetwork(data.sumo_visualization, data.history || [], data);
   for (const direction of ['north','east','south','west']) {
     const count = data.queues[direction] || 0;
     $(`queue-${direction}`).textContent = count;
@@ -65,6 +70,86 @@ function showSnapshot(data) {
   $('run-button').innerHTML = data.paused ? '<svg class="ui-icon"><use href="#i-play"></use></svg><span>Resume simulation</span>' : '<svg class="ui-icon"><use href="#i-pause"></use></svg><span>Pause simulation</span>';
   $('served-progress').style.width = `${Math.min(100, data.served / 3)}%`;
   drawHistory(data.history || []);
+}
+function drawSumoNetwork(visualization, history, current) {
+  const vehicles = visualization?.vehicles || [];
+  const vehicleLayer = $('sumo-vehicles');
+  vehicleLayer.replaceChildren();
+  const ns = 'http://www.w3.org/2000/svg';
+  const vehiclePalette = ['#F1B544', '#F2D545', '#49C85B', '#5DA8E8', '#E27C52'];
+  for (const vehicle of vehicles) {
+    const x = 380 + Number(vehicle.x || 0) * .84;
+    const y = 285 - Number(vehicle.y || 0) * .84;
+    const group = document.createElementNS(ns, 'g');
+    group.setAttribute('class', 'sumo-vehicle');
+    group.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${Number(vehicle.angle || 0)})`);
+    const title = document.createElementNS(ns, 'title');
+    title.textContent = `${vehicle.id} · ${Number(vehicle.speed || 0).toFixed(1)} m/s`;
+    group.append(title);
+    const body = document.createElementNS(ns, 'rect');
+    body.setAttribute('class', 'sumo-vehicle-body'); body.setAttribute('x', '-5'); body.setAttribute('y', '-10'); body.setAttribute('width', '10'); body.setAttribute('height', '20'); body.setAttribute('rx', '3');
+    const colorSeed = [...String(vehicle.id)].reduce((total, character) => total + character.charCodeAt(0), 0);
+    body.style.fill = vehiclePalette[colorSeed % vehiclePalette.length];
+    const glass = document.createElementNS(ns, 'rect');
+    glass.setAttribute('class', 'sumo-vehicle-glass'); glass.setAttribute('x', '-3.3'); glass.setAttribute('y', '-6'); glass.setAttribute('width', '6.6'); glass.setAttribute('height', '5'); glass.setAttribute('rx', '1.5');
+    group.append(body, glass); vehicleLayer.append(group);
+  }
+  $('sumo-vehicle-count').textContent = `${vehicles.length} vehicle${vehicles.length === 1 ? '' : 's'} in network`;
+
+  const states = String(visualization?.signal_state || (current.phase === 'north_south' ? 'GGrr' : 'rrGG'));
+  const approaches = { north: 0, south: 1, east: 2, west: 3 };
+  document.querySelectorAll('.sumo-signal').forEach(signal => {
+    const state = states[approaches[signal.dataset.approach]] || 'r';
+    const color = state.toLowerCase() === 'g' ? 'green' : state.toLowerCase() === 'y' ? 'amber' : 'red';
+    signal.querySelectorAll('.signal-lamp').forEach(lamp => lamp.setAttribute('class', 'signal-lamp'));
+    const lampIndex = color === 'red' ? 0 : color === 'amber' ? 1 : 2;
+    signal.querySelectorAll('.signal-lamp')[lampIndex]?.classList.add('on', color);
+  });
+
+  drawSumoTracker(history, current);
+}
+function drawSumoTracker(history, current) {
+  const svg = $('sumo-tls-tracker');
+  svg.replaceChildren();
+  const ns = 'http://www.w3.org/2000/svg';
+  const add = (tag, attrs, text = '') => {
+    const node = document.createElementNS(ns, tag);
+    Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+    if (text) node.textContent = text;
+    svg.append(node); return node;
+  };
+  const samples = history.filter(item => item.phase).slice(-60);
+  if (!samples.length) samples.push({ time: current.time, phase: current.phase, transitioning: current.transitioning });
+  const rows = [
+    { label: 'North', approach: 'north' }, { label: 'South', approach: 'south' },
+    { label: 'East', approach: 'east' }, { label: 'West', approach: 'west' },
+  ];
+  const startX = 166, trackWidth = 696, rowTop = 30, rowGap = 37, barHeight = 19;
+  const colorFor = (sample, approach) => {
+    const northSouth = approach === 'north' || approach === 'south';
+    const active = northSouth === (sample.phase === 'north_south');
+    if (sample.transitioning && active) return 'amber';
+    return active ? 'green' : 'red';
+  };
+  rows.forEach((row, rowIndex) => {
+    const y = rowTop + rowIndex * rowGap;
+    add('text', { x: 0, y: y + 14, class: 'sumo-tracker-label' }, row.label);
+    add('rect', { x: startX, y, width: trackWidth, height: barHeight, rx: 5, class: 'sumo-tracker-track' });
+    const cellWidth = trackWidth / samples.length;
+    samples.forEach((sample, index) => {
+      add('rect', { x: (startX + index * cellWidth).toFixed(2), y, width: Math.max(cellWidth + .35, 1).toFixed(2), height: barHeight, class: `sumo-tracker-segment ${colorFor(sample, row.approach)}` });
+    });
+  });
+  const bottom = rowTop + rows.length * rowGap - 7;
+  add('line', { x1: startX, y1: bottom, x2: startX + trackWidth, y2: bottom, class: 'sumo-tracker-axis' });
+  [0, .33, .66, 1].forEach((fraction, index) => {
+    const x = startX + trackWidth * fraction;
+    add('line', { x1: x, y1: bottom, x2: x, y2: bottom + 5, class: 'sumo-tracker-axis' });
+    const sampleIndex = Math.min(samples.length - 1, Math.round((samples.length - 1) * fraction));
+    const label = samples[sampleIndex]?.time ?? current.time;
+    add('text', { x, y: bottom + 18, 'text-anchor': index === 0 ? 'start' : index === 3 ? 'end' : 'middle', class: 'sumo-tracker-time' }, `${label}s`);
+  });
+  $('sumo-tracker-window').textContent = `${samples.length} s window`;
 }
 function phaseName(phase) { return phase === 'north_south' ? 'North ↔ South' : 'East ↔ West'; }
 function drawCars(direction, count) {

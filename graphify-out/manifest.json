@@ -36,9 +36,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1794129245.6853032,
-    "seen": 1794129264.335381,
-    "ast_hash": "891eea20e04d6c1f2184139445893b35",
+    "mtime": 1794143485.1222813,
+    "seen": 1794143510.444839,
+    "ast_hash": "21149f91f248040056e6c25fc5cc8239",
     "semantic_hash": ""
   },
   "backend/README.md": {
@@ -60,9 +60,9 @@
     "semantic_hash": ""
   },
   "docs/02-TECHNICAL-ARCHITECTURE.md": {
-    "mtime": 1794129257.9062018,
-    "seen": 1794129264.335389,
-    "ast_hash": "6e1869765fd5d1be625b03de14917ca9",
+    "mtime": 1794143498.4779274,
+    "seen": 1794143510.444843,
+    "ast_hash": "e1c525ea95640acc7b50b5d514fda21d",
     "semantic_hash": ""
   },
   "backend/app/agents/q_learning.py": {
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "backend/app/api/routes.py": {
-    "mtime": 1794129002.482286,
-    "seen": 1794129264.335351,
-    "ast_hash": "f4626bad04030f2be38566374ea12a57",
+    "mtime": 1794143271.6099403,
+    "seen": 1794143403.902057,
+    "ast_hash": "3288e76369f4f5bf6a11afcff11c6b10",
     "semantic_hash": ""
   },
   "backend/app/main.py": {
@@ -126,9 +126,9 @@
     "semantic_hash": ""
   },
   "frontend/app.js": {
-    "mtime": 1794129233.163694,
-    "seen": 1794129264.33538,
-    "ast_hash": "a9f9be26e1c7422d0a174b3d084a187e",
+    "mtime": 1794143398.3724003,
+    "seen": 1794143403.902074,
+    "ast_hash": "5d4d02bba4037abb6bc22aaf476cbc93",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -138,9 +138,9 @@
     "semantic_hash": ""
   },
   "frontend/index.html": {
-    "mtime": 1794128583.1754382,
-    "seen": 1794128656.845728,
-    "ast_hash": "3d0c8ed0a2566740807f7e73ce0592d0",
+    "mtime": 1794143331.1325061,
+    "seen": 1794143403.902082,
+    "ast_hash": "25c74634ef9acb87c1be0a4eb7a8a422",
     "semantic_hash": ""
   },
   "frontend/README.md": {
@@ -210,9 +210,9 @@
     "semantic_hash": ""
   },
   "backend/app/simulator/sumo/environment.py": {
-    "mtime": 1794129002.4806569,
-    "seen": 1794129264.335361,
-    "ast_hash": "b516967ec5f8a8b0568e78c2383693e3",
+    "mtime": 1794143264.4198606,
+    "seen": 1794143403.9020622,
+    "ast_hash": "5e8b9a796d103db5cbc2df67a95d15ca",
     "semantic_hash": ""
   },
   "backend/scripts/run_sumo_evaluation.py": {

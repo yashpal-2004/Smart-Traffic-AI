@@ -105,6 +105,7 @@ def load_sumo_agent() -> QLearningAgent | None:
 
 def serialize_snapshot(run: Run) -> dict:
     snap = run.env.snapshot()
+    visualization = getattr(run.env, "visualization", None)
     return {
         "time": snap.time,
         "phase": snap.phase.value,
@@ -122,6 +123,7 @@ def serialize_snapshot(run: Run) -> dict:
         "green_target": run.green_target,
         "history": run.history[-500:],
         "model_trained": run.model_trained,
+        "sumo_visualization": visualization() if visualization else None,
     }
 
 
@@ -287,7 +289,8 @@ def step_run(run_id: str, request: StepRequest):
             run.env.step()
         snap = run.env.snapshot()
         run.history.append({"time": snap.time, "queue": sum(snap.queues.values()),
-                            "wait": snap.average_wait_seconds, "served": snap.served})
+                            "wait": snap.average_wait_seconds, "served": snap.served,
+                            "phase": snap.phase.value, "transitioning": snap.transitioning})
     return serialize_snapshot(run)
 
 

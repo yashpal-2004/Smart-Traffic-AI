@@ -78,6 +78,43 @@ body{background:var(--bg);color:var(--text)}
 .site-picker-help{display:block;max-width:420px;color:#82796A;font:10px/1.45 Manrope,sans-serif;letter-spacing:0}
 .history-controls>#forecast-button{align-self:flex-start;margin-top:22px;min-height:42px;padding:0 15px;border-radius:9px}
 @media(max-width:700px){.history-controls{display:grid;grid-template-columns:minmax(0,1fr);gap:11px}.history-controls>label{min-width:0;width:100%}.history-controls>#forecast-button{margin-top:0;justify-self:start}}
+.dashboard-grid.sumo-mode .sumo-visualization-card,.dashboard-grid.sumo-mode .agent-card{grid-column:1/-1}
+.sumo-visualization-card{padding:16px;min-width:0}
+.sumo-live-tag{display:flex;align-items:center;gap:7px;padding:6px 9px;border:1px solid #C9D8C9;border-radius:999px;color:#66866C;font:9px 'DM Mono',monospace;letter-spacing:.6px;white-space:nowrap}
+.sumo-live-tag i{width:7px;height:7px;border-radius:50%;background:#66866C;box-shadow:0 0 0 3px #66866C22}
+.sumo-map-frame{overflow:hidden;border:1px solid #D8CEBB;border-radius:15px;background:#65734f;margin-top:13px}
+.sumo-road-map{display:block;width:100%;max-height:470px;background:#65734f}
+.sumo-land{fill:#65734f}
+.sumo-road{fill:#383d3e}
+.sumo-lane-line{fill:none;stroke:#E3E0D4;stroke-width:2;stroke-dasharray:13 12;opacity:.82}
+.sumo-crossing{fill:#E4E1D7;opacity:.9}
+.sumo-junction{fill:#383d3e;stroke:#D3D0C5;stroke-width:2}
+.sumo-map-direction{fill:#E6E2D6;font:600 12px 'DM Mono',monospace;letter-spacing:1.5px;opacity:.82}
+.sumo-junction-label{fill:#E6E2D6;font:600 8px 'DM Mono',monospace;letter-spacing:1px;opacity:.8}
+.sumo-signal rect{fill:#252a2c;stroke:#DED9CA;stroke-width:1.5}
+.sumo-signal .signal-lamp{fill:#575a53;stroke:#111;stroke-width:.8}
+.sumo-signal .signal-lamp.red.on{fill:#D6574F;filter:drop-shadow(0 0 4px #e3564e88)}
+.sumo-signal .signal-lamp.amber.on{fill:#F1B544;filter:drop-shadow(0 0 4px #f1b54488)}
+.sumo-signal .signal-lamp.green.on{fill:#4ACB58;filter:drop-shadow(0 0 4px #4acb5888)}
+.sumo-vehicle{transition:transform .15s linear}
+.sumo-vehicle-body{fill:#F1B544;stroke:#1b2020;stroke-width:1}
+.sumo-vehicle-glass{fill:#26353b;stroke:#ffffff66;stroke-width:.6}
+.sumo-map-legend{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px 3px 13px;color:#82796A;font:9px 'DM Mono',monospace}
+.sumo-map-legend>span{display:flex;align-items:center;gap:6px}
+.sumo-map-legend>span:last-child{margin-left:auto}
+.sumo-tracker-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #E5DCCB;padding-top:13px}
+.sumo-tracker-heading>span{color:#315F85;font:9px 'DM Mono',monospace;white-space:nowrap}
+.sumo-tracker-scroll{overflow-x:auto;padding:8px 0 0}
+.sumo-tls-tracker{display:block;width:100%;min-width:640px;height:auto;overflow:visible}
+.sumo-tracker-label{fill:#71695D;font:10px 'DM Mono',monospace}
+.sumo-tracker-track{fill:#E8DECB}
+.sumo-tracker-segment{opacity:.88}
+.sumo-tracker-segment.green{fill:#4B9B57}
+.sumo-tracker-segment.amber{fill:#E2A83C}
+.sumo-tracker-segment.red{fill:#C75D54}
+.sumo-tracker-axis{stroke:#B8AA91;stroke-width:1}
+.sumo-tracker-time{fill:#82796A;font:9px 'DM Mono',monospace}
+@media(max-width:700px){.sumo-visualization-card{padding:12px}.sumo-map-legend{gap:10px}.sumo-map-legend>span:last-child{margin-left:0}.sumo-road-map{min-height:250px;object-fit:contain}}
 /* Keep evaluation result panels on the same light surface as the rest of the app */
 .result-column,.comparison-bar,.paired-summary-card{background:#F5ECDD;border-color:#D8CEBB;color:#39352F}
 .result-column h3,.result-column strong,.paired-summary-card strong{color:#39352F}

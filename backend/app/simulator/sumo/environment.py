@@ -163,6 +163,24 @@ class SumoEnvironment:
             max_total_queue=self.metrics.max_total_queue,
         )
 
+    def visualization(self):
+        """Return live world coordinates for the browser's SUMO network view."""
+        vehicles = []
+        for vehicle_id in self.conn.vehicle.getIDList():
+            x, y = self.conn.vehicle.getPosition(vehicle_id)
+            vehicles.append({
+                "id": vehicle_id,
+                "x": round(x, 2),
+                "y": round(y, 2),
+                "angle": round(self.conn.vehicle.getAngle(vehicle_id), 1),
+                "speed": round(self.conn.vehicle.getSpeed(vehicle_id), 2),
+            })
+        return {
+            "vehicles": vehicles,
+            "signal_state": self.conn.trafficlight.getRedYellowGreenState("center"),
+            "network_bounds": {"min_x": -300, "max_x": 300, "min_y": -300, "max_y": 300},
+        }
+
     def step(self, switch=False):
         if switch:
             self.request_switch()
