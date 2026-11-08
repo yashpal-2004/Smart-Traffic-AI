@@ -56,3 +56,11 @@ body{background:var(--bg);color:var(--text)}
 .decision-main>div:last-child{display:grid;gap:3px;min-width:0}
 .decision-main strong{font-size:13px;letter-spacing:-.15px}
 .decision-main small{margin-top:0;font-size:10px}
+/* Training progress status and episode count */
+.training-progress{display:grid;gap:12px;padding:14px 16px;margin:10px 0 14px;border:1px solid #D8CEBB;border-radius:12px;background:#F8F2E7;box-shadow:0 5px 16px #76684a0b}
+.progress-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;line-height:1.45}
+.progress-heading strong{display:block;flex:1 1 250px;min-width:0;color:#39352F;font-size:12px;font-weight:650;overflow-wrap:anywhere}
+.progress-heading span{flex:0 0 auto;padding:4px 8px;border:1px solid #D8CEBB;border-radius:999px;background:#F5ECDD;color:#82796A;font:9px 'DM Mono',monospace;white-space:nowrap}
+.progress-track{height:6px;overflow:hidden;border-radius:999px;background:#E5DCCB}
+.progress-track i{display:block;height:100%;width:0;border-radius:inherit;background:#315F85;transition:width .2s ease}
+@media(max-width:520px){.training-progress{padding:12px}.progress-heading{gap:7px}.progress-heading strong{flex-basis:100%}}
