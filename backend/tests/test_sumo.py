@@ -102,6 +102,11 @@ class SumoIntegrationTests(unittest.TestCase):
 
 
 class SumoCheckpointTests(unittest.TestCase):
+    def test_hosted_sumo_run_horizon_is_bounded(self):
+        from app.api.routes import SUMO_DEMO_STEP_LIMIT
+
+        self.assertEqual(SUMO_DEMO_STEP_LIMIT, 3_600)
+
     def test_checkpoint_must_match_environment_version(self):
         from app.api import routes
 

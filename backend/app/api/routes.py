@@ -73,6 +73,8 @@ training_job: dict = {"status": "idle", "completed": 0, "total": 0}
 MODEL_PATH = Path(__file__).resolve().parents[2] / "artifacts" / "q_table.json"
 DURATION_MODEL_PATH = Path(__file__).resolve().parents[2] / "artifacts" / "duration_q_table.json"
 SUMO_MODEL_PATH = Path(__file__).resolve().parents[2] / "artifacts" / "sumo_q_table.json"
+# Keep the hosted SUMO demand horizon small enough for Render's free memory tier.
+SUMO_DEMO_STEP_LIMIT = 3_600
 trained_agent = QLearningAgent.load(MODEL_PATH) if MODEL_PATH.exists() else QLearningAgent(epsilon=0, epsilon_min=0)
 model_trained = MODEL_PATH.exists()
 duration_agent = DurationQLearningAgent.load(DURATION_MODEL_PATH) if DURATION_MODEL_PATH.exists() else None
@@ -245,7 +247,7 @@ def create_run(request: CreateRunRequest):
             raise HTTPException(503, "SUMO is unavailable. Install backend/requirements-sumo.txt and ensure sumo and netconvert are available.")
         try:
             env = SumoEnvironment(SCENARIOS[request.scenario], request.seed, config,
-                                  steps=1_000_000, gui=request.sumo_gui)
+                                  steps=SUMO_DEMO_STEP_LIMIT, gui=request.sumo_gui)
         except (RuntimeError, OSError, subprocess.SubprocessError) as exc:
             raise HTTPException(503, str(exc)) from exc
     else:
@@ -283,6 +285,9 @@ def step_run(run_id: str, request: StepRequest):
     if run is None:
         raise HTTPException(404, "run not found")
     for _ in range(request.steps):
+        if run.engine == "sumo" and run.env.time >= run.env.steps_limit:
+            run.paused = True
+            break
         if run.controller == "fixed_time":
             run.fixed.step(run.env)
         elif run.controller == "duration_q_learning":
@@ -305,6 +310,9 @@ def step_run(run_id: str, request: StepRequest):
         run.history.append({"time": snap.time, "queue": sum(snap.queues.values()),
                             "wait": snap.average_wait_seconds, "served": snap.served,
                             "phase": snap.phase.value, "transitioning": snap.transitioning})
+        if run.engine == "sumo" and run.env.time >= run.env.steps_limit:
+            run.paused = True
+            break
     return serialize_snapshot(run)
 
 

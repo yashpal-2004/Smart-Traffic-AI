@@ -211,12 +211,13 @@ async function createRun() {
 }
 async function doStep(steps=1) {
   if(!runId) await createRun();
-  const data=await request(`/runs/${runId}/step`,{method:'POST',body:JSON.stringify({steps})});showSnapshot(data);
+  const data=await request(`/runs/${runId}/step`,{method:'POST',body:JSON.stringify({steps})});showSnapshot(data);return data;
 }
 function stopTimer(){if(timer){clearTimeout(timer);timer=null}}
 async function runTick(){
  try{
-  await doStep(1);
+  const data=await doStep(1);
+  if(data.paused){stopTimer();if(data.engine==='sumo'&&data.time>=3600)toast('SUMO demo reached its 3600-step limit. Reset to start a fresh run.');return}
   if(timer!==null)timer=setTimeout(runTick,180);
  }catch(error){stopTimer();toast(error.message)}
 }
